@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="hud-corner top-left"></div>
+    <div class="hud-corner top-right"></div>
+    <div class="hud-corner bottom-left"></div>
+    <div class="hud-corner bottom-right"></div>
+
+    <!-- FULL VIEW -->
+    <div class="container" id="full-view">
+        <div class="panel" style="grid-column: 1; grid-row: 1 / 3;">
+            <div class="panel-header">
+                SYSTEM STATUS
+                <button id="exit-btn" style="float: right; background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">EXIT</button>
+                <button id="mini-toggle" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px;">MINI</button>
+            </div>
+            <div class="system-stats">
+                <div class="stat-item"><span>CPU LOAD</span><span id="cpu-val">0%</span></div>
+                <div class="stat-bar"><div id="cpu-bar" class="stat-fill" style="width: 0%"></div></div>
+                <div class="stat-item" style="margin-top: 20px;"><span>MEMORY</span><span id="mem-val">0%</span></div>
+                <div class="stat-bar"><div id="mem-bar" class="stat-fill" style="width: 0%"></div></div>
+                <div class="stat-item" style="margin-top: 20px;"><span>VOLUME</span><span id="vol-val">0%</span></div>
+                <div class="stat-bar"><div id="vol-bar" class="stat-fill" style="width: 0%"></div></div>
+                <div class="stat-item" style="margin-top: 40px;"><span>NETWORK</span><span style="color: #00ff00;">STABLE</span></div>
+            </div>
+        </div>
+
+        <div class="core-container">
+            <div class="rotating-ring"></div>
+            <div class="core" id="jarvis-core" title="Click to mute/stop">
+                <div class="inner-core"></div>
+            </div>
+            <div style="position: absolute; bottom: 20%; font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 5px;">J.A.R.V.I.S.</div>
+        </div>
+
+        <div class="panel" style="grid-column: 3; grid-row: 1 / 3;">
+            <div class="panel-header">ACCESS LOG</div>
+            <div class="chat-log" id="chat-log">
+                <div class="msg msg-jarvis">J.A.R.V.I.S. Online. Waiting for command, Sir.</div>
+            </div>
+        </div>
+
+        <div class="input-area" style="position: relative;">
+            <input type="text" id="user-input" placeholder="Enter command..." autofocus>
+            <button id="mic-btn" style="position: absolute; right: 10px; background: none; border: none; color: #00f6ff; cursor: pointer; font-size: 1.5rem;">🎙️</button>
+        </div>
+    </div>
+
+    <!-- MINI VIEW (Hidden by default) -->
+    <div id="mini-view" style="display: none; width: 100%; height: 100%; justify-content: center; align-items: center; cursor: pointer;">
+        <div class="mini-core" id="mini-core">
+            <div class="inner-core" style="width: 20px; height: 20px;"></div>
+        </div>
+        <div id="mini-text" style="position: absolute; bottom: 10px; font-family: 'Orbitron'; font-size: 0.6rem; color: #00f6ff; letter-spacing: 2px;">ACTIVE</div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
