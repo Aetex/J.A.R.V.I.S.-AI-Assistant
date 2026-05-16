@@ -26,7 +26,7 @@ Choose your operating system below for specific instructions:
 
 1. **Clone the Repo**:
    ```powershell
-   git clone https://github.com/YOUR_USERNAME/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
 2. **Environment Setup**:
@@ -53,7 +53,7 @@ Choose your operating system below for specific instructions:
 
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
 2. **Environment Setup**:
@@ -82,7 +82,7 @@ Choose your operating system below for specific instructions:
 
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
 2. **Dependencies**:
