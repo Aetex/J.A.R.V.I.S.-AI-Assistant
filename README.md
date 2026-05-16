@@ -9,11 +9,17 @@ A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. Th
 ---
 
 ## 🔑 1. Get Your Free API Key
-This project requires a **Groq API Key** for lightning-fast AI responses and Whisper STT.
+This project supports two high-performance AI engines. You can use either (or both!):
 
-1. Go to the [Groq Cloud Console](https://console.groq.com/keys).
-2. Sign up/Login and click **"Create API Key"**.
-3. Copy the key. You will use it in the setup step below.
+### Option A: Groq (Llama 3.3)
+1. Visit the [Groq Cloud Console](https://console.groq.com/keys).
+2. Create an API Key. This provides lightning-fast responses using Llama 3.
+
+### Option B: Google Gemini (1.5 Flash)
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Create a free API Key. This provides a massive context window and is optimized for the free tier.
+
+*Note: If both keys are provided, JARVIS will prioritize Gemini.*
 
 ---
 
@@ -41,7 +47,9 @@ Choose your operating system below for specific instructions:
    ```
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
+   - Open `.env` and paste your key(s):
+     - `GROQ_API_KEY="your_key_here"`
+     - `GOOGLE_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```powershell
    cd ui
@@ -72,7 +80,9 @@ Choose your operating system below for specific instructions:
    ```
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
+   - Open `.env` and paste your key(s):
+     - `GROQ_API_KEY="your_key_here"`
+     - `GOOGLE_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```bash
    cd ui
@@ -103,7 +113,9 @@ Choose your operating system below for specific instructions:
    ```
 4. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
+   - Open `.env` and paste your key(s):
+     - `GROQ_API_KEY="your_key_here"`
+     - `GOOGLE_API_KEY="your_key_here"`
 5. **UI Setup**:
    ```bash
    cd ui
