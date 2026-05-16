@@ -41,7 +41,7 @@ Choose your operating system below for specific instructions:
    ```
 3. **Configure API**:
    - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY=your_key_here`
+   - Add: `GROQ_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```powershell
    cd ui
@@ -72,7 +72,7 @@ Choose your operating system below for specific instructions:
    ```
 3. **Configure API**:
    - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY=your_key_here`
+   - Add: `GROQ_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```bash
    cd ui
@@ -103,7 +103,7 @@ Choose your operating system below for specific instructions:
    ```
 4. **Configure API**:
    - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY=your_key_here`
+   - Add: `GROQ_API_KEY="your_key_here"`
 5. **UI Setup**:
    ```bash
    cd ui
