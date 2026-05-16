@@ -29,10 +29,22 @@
             </div>
         </div>
 
-        <div class="core-container">
-            <div class="rotating-ring"></div>
-            <div class="core" id="jarvis-core" title="Click to mute/stop">
-                <div class="inner-core"></div>
+        <!-- CENTER CORE -->
+        <div class="core-container" id="jarvis-core-trigger">
+            <div class="jarvis-container" id="jarvis-core">
+                <div class="hud-layer scanning-grid"></div>
+                <div class="hud-layer orbital-rings">
+                    <div class="ring ring-1"></div>
+                    <div class="ring ring-2"></div>
+                    <div class="ring ring-3"></div>
+                </div>
+                
+                <div class="core-wrapper">
+                    <div class="core-glow"></div>
+                    <div class="core-inner"></div>
+                    <div class="status-indicator" id="status-text">SYSTEM IDLE</div>
+                </div>
+                <div class="thinking-loader" id="thinking-loader"></div>
             </div>
             <div style="position: absolute; bottom: 20%; font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 5px;">J.A.R.V.I.S.</div>
         </div>

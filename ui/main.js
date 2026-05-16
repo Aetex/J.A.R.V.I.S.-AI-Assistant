@@ -29,11 +29,6 @@ const fs = require('fs');
 function createTray() {
   const iconPath = path.join(__dirname, 'icon.png');
   
-  if (!fs.existsSync(iconPath)) {
-    console.log("[*] Tray icon not found. Skipping tray initialization to prevent crash.");
-    return;
-  }
-
   try {
     tray = new Tray(iconPath);
     
