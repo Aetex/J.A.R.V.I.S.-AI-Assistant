@@ -40,8 +40,8 @@ Choose your operating system below for specific instructions:
    pip install -r requirements.txt
    ```
 3. **Configure API**:
-   - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY="your_key_here"`
+   - Rename `.env.example` to `.env`.
+   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```powershell
    cd ui
@@ -71,8 +71,8 @@ Choose your operating system below for specific instructions:
    pip install -r requirements.txt
    ```
 3. **Configure API**:
-   - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY="your_key_here"`
+   - Rename `.env.example` to `.env`.
+   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
 4. **UI Setup**:
    ```bash
    cd ui
@@ -102,8 +102,8 @@ Choose your operating system below for specific instructions:
    pip install -r requirements.txt
    ```
 4. **Configure API**:
-   - Create a file named `.env` in the root folder.
-   - Add: `GROQ_API_KEY="your_key_here"`
+   - Rename `.env.example` to `.env`.
+   - Open `.env` and paste your key: `GROQ_API_KEY="your_key_here"`
 5. **UI Setup**:
    ```bash
    cd ui
