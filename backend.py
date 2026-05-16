@@ -174,6 +174,13 @@ async def chat(request: ChatRequest):
                 print("[*] Failsafe: Shutdown keyword detected. Initiating power down...")
                 tools_executed.append({"name": "shutdown_system", "result": "Failsafe triggered"})
                 asyncio.create_task(shutdown_all())
+
+        # Failsafe: Debug Console
+        debug_close_keywords = ["debugging mode has been terminated", "debug console is now closed", "exit debugging mode"]
+        if any(kw in final_text.lower() for kw in debug_close_keywords):
+            if not any(t["name"] == "close_debug_console" for t in tools_executed):
+                print("[*] Failsafe: Debug close keyword detected. Closing console...")
+                execute_tool("close_debug_console", {})
         
         # Speak the response in the background
         asyncio.create_task(speech.speak(final_text))
