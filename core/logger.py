@@ -24,8 +24,11 @@ class JARVISLogger:
 
 def setup_logger():
     # Ensure log file exists and is clear for new session
-    if os.path.exists(LOG_FILE):
-        os.remove(LOG_FILE)
+    try:
+        if os.path.exists(LOG_FILE):
+            os.remove(LOG_FILE)
+    except PermissionError:
+        print("[!] Warning: jarvis.log is locked. Appending to existing log.")
     
     sys.stdout = JARVISLogger()
     sys.stderr = sys.stdout

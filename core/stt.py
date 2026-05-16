@@ -7,41 +7,47 @@ load_dotenv()
 
 class JARVISSTT:
     def __init__(self):
-        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        self.recognizer = sr.Recognizer()
-        self.microphone = sr.Microphone()
+        self.groq_key = os.getenv("GROQ_API_KEY")
+        if self.groq_key and self.groq_key != "your_groq_api_key_here":
+            self.client = Groq(api_key=self.groq_key)
+            print("[*] STT Engine: Groq Whisper (High Precision)")
+        else:
+            self.client = None
+            print("[*] STT Engine: Google Free (No Key Mode)")
 
     def listen_and_transcribe(self):
-        """Listens for a command and transcribes it using Groq Whisper."""
-        with self.microphone as source:
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
             print("[*] Listening...")
-            self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
-            try:
-                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
-                
-                # Save audio to a temp file
+            r.pause_threshold = 1
+            audio = r.listen(source)
+
+        try:
+            print("[*] Transcribing...")
+            if self.client:
+                # Use Groq Whisper if key is available
                 with open("temp_audio.wav", "wb") as f:
                     f.write(audio.get_wav_data())
                 
-                # Transcribe using Groq
                 with open("temp_audio.wav", "rb") as file:
                     transcription = self.client.audio.transcriptions.create(
                         file=("temp_audio.wav", file.read()),
                         model="whisper-large-v3",
-                        response_format="text",
-                        language="en"
                     )
                 
-                # Cleanup
                 if os.path.exists("temp_audio.wav"):
                     os.remove("temp_audio.wav")
                 
-                return transcription.strip()
-            except sr.WaitTimeoutError:
-                return ""
-            except Exception as e:
-                print(f"[*] STT Error: {e}")
-                return ""
+                return transcription.text
+            else:
+                # Fallback to Google Free STT (requires no API key)
+                return r.recognize_google(audio)
+        except sr.UnknownValueError:
+            print("[!] Could not understand audio")
+            return ""
+        except Exception as e:
+            print(f"[!] STT Error: {str(e)}")
+            return ""
 
 if __name__ == "__main__":
     stt = JARVISSTT()
