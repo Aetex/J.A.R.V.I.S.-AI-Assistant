@@ -24,11 +24,15 @@ Choose your operating system below for specific instructions:
 <details>
 <summary><b>🪟 Windows Setup (Click to expand)</b></summary>
 
-1. **Clone the Repo**:
+1. **Option A: Clone with Git** (Recommended):
    ```powershell
    git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
+   **Option B: Download ZIP**:
+   - Click the green **"Code"** button at the top of this page.
+   - Select **"Download ZIP"**.
+   - Extract the folder and open it in your terminal.
 2. **Environment Setup**:
    ```powershell
    python -m venv venv
@@ -51,11 +55,15 @@ Choose your operating system below for specific instructions:
 <details>
 <summary><b>🍎 macOS Setup (Click to expand)</b></summary>
 
-1. **Clone the Repo**:
+1. **Option A: Clone with Git** (Recommended):
    ```bash
    git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
+   **Option B: Download ZIP**:
+   - Click the green **"Code"** button at the top of this page.
+   - Select **"Download ZIP"**.
+   - Extract the folder and open it in your terminal.
 2. **Environment Setup**:
    ```bash
    python3 -m venv venv
