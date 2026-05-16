@@ -32,6 +32,9 @@ def execute_tool(tool_name, args):
     elif tool_name == "open_debug_console":
         os.system('start "JARVIS Debug Console" cmd /k "powershell Get-Content jarvis.log -Wait"')
         return "Opening debugging console, sir. All system logs are now being streamed."
+    elif tool_name == "close_debug_console":
+        os.system('taskkill /F /FI "WINDOWTITLE eq JARVIS Debug Console*"')
+        return "Terminating debug console, sir. Normal operational parameters restored."
     else:
         return f"Tool {tool_name} is not recognized, sir."
 
