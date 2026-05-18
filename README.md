@@ -44,7 +44,7 @@ Choose your operating system below for specific instructions:
    - Wait for it to say "INSTALLATION COMPLETE!"
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key(s):
+   - Open `.env` and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 4. **Run**:
@@ -69,7 +69,7 @@ Choose your operating system below for specific instructions:
    ```
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key(s):
+   - Open `.env` and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 4. **Run**:
@@ -94,7 +94,7 @@ Choose your operating system below for specific instructions:
    ```
 4. **Configure API**:
    - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your key(s):
+   - Open `.env` and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 5. **Run**:
