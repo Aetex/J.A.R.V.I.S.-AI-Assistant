@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "==================================================="
-echo "  J.A.R.V.I.S. AUTOMATED INSTALLATION (UNIX)"
+echo "  J.A.R.V.I.S. AUTOMATED INSTALLATION (MAC)"
 echo "==================================================="
 echo ""
 

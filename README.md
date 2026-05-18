@@ -65,7 +65,7 @@ Choose your operating system below for specific instructions:
    - Extract the folder and open it in your terminal.
 2. **Run the Installer**:
    ```bash
-   sh install_mac_linux.sh
+   sh install_mac.sh
    ```
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
@@ -90,7 +90,7 @@ Choose your operating system below for specific instructions:
    Ensure you have `pyaudio` dependencies: `sudo apt-get install python3-pyaudio portaudio19-dev`
 3. **Run the Installer**:
    ```bash
-   sh install_mac_linux.sh
+   sh install_linux.sh
    ```
 4. **Configure API**:
    - Rename `.env.example` to `.env`.
