@@ -38,7 +38,7 @@ Choose your operating system below for specific instructions:
    **Option B: Download ZIP**:
    - Click the green **"Code"** button at the top of this page.
    - Select **"Download ZIP"**.
-   - Extract the folder and open it in your terminal.
+   - Extract the folder and open it.
 2. **Run the Installer**:
    - Double-click the `install_windows.bat` file.
    - Wait for it to say "INSTALLATION COMPLETE!"
