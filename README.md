@@ -4,18 +4,18 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Electron](https://img.shields.io/badge/platform-Electron-blueviolet.svg)](https://www.electronjs.org/)
 
-A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. This project combines a high-performance Python backend (Groq Llama 3.3) with a stunning Electron-based glassmorphism HUD.
+A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. This project combines a high-performance Python backend (powered by Groq or Google Gemini) with a stunning Electron-based glassmorphism HUD.
 
 ---
 
 ## 🔑 1. Get Your Free API Key
 This project supports two high-performance AI engines. You can use either (or both!):
 
-### Option A: Groq (Llama 3.3)
+### Option A: Groq API
 1. Visit the [Groq Cloud Console](https://console.groq.com/keys).
-2. Create an API Key. This provides lightning-fast responses using Llama 3.
+2. Create an API Key. This provides lightning-fast responses using Groq's high-speed inference.
 
-### Option B: Google Gemini (1.5 Flash)
+### Option B: Google Gemini API
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create a free API Key. This provides a massive context window and is optimized for the free tier.
 
