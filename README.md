@@ -39,24 +39,15 @@ Choose your operating system below for specific instructions:
    - Click the green **"Code"** button at the top of this page.
    - Select **"Download ZIP"**.
    - Extract the folder and open it in your terminal.
-2. **Environment Setup**:
-   ```powershell
-   python -m venv venv
-   .\venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+2. **Run the Installer**:
+   - Double-click the `install_windows.bat` file.
+   - Wait for it to say "INSTALLATION COMPLETE!"
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
    - Open `.env` and paste your key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
-4. **UI Setup**:
-   ```powershell
-   cd ui
-   npm install
-   cd ..
-   ```
-5. **Run**:
+4. **Run**:
    - Double-click `launch_jarvis.bat`.
 </details>
 
@@ -72,24 +63,16 @@ Choose your operating system below for specific instructions:
    - Click the green **"Code"** button at the top of this page.
    - Select **"Download ZIP"**.
    - Extract the folder and open it in your terminal.
-2. **Environment Setup**:
+2. **Run the Installer**:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+   sh install_mac_linux.sh
    ```
 3. **Configure API**:
    - Rename `.env.example` to `.env`.
    - Open `.env` and paste your key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
-4. **UI Setup**:
-   ```bash
-   cd ui
-   npm install
-   cd ..
-   ```
-5. **Run**:
+4. **Run**:
    ```bash
    sh launch_jarvis.sh
    ```
@@ -105,24 +88,16 @@ Choose your operating system below for specific instructions:
    ```
 2. **Dependencies**:
    Ensure you have `pyaudio` dependencies: `sudo apt-get install python3-pyaudio portaudio19-dev`
-3. **Environment Setup**:
+3. **Run the Installer**:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+   sh install_mac_linux.sh
    ```
 4. **Configure API**:
    - Rename `.env.example` to `.env`.
    - Open `.env` and paste your key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
-5. **UI Setup**:
-   ```bash
-   cd ui
-   npm install
-   cd ..
-   ```
-6. **Run**:
+5. **Run**:
    ```bash
    sh launch_jarvis.sh
    ```
