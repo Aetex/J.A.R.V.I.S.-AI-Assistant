@@ -4,7 +4,6 @@ const input = document.getElementById('user-input');
 const chatLog = document.getElementById('chat-log');
 const micBtn = document.getElementById('mic-btn');
 const core = document.getElementById('jarvis-core');
-const statusText = document.getElementById('status-text');
 
 const cpuBar = document.getElementById('cpu-bar');
 const memBar = document.getElementById('mem-bar');
@@ -57,18 +56,12 @@ async function sendMessage(msg) {
     await stopSpeech();
     addMessage(msg, 'user');
     
-    core.classList.add('thinking');
-    statusText.innerText = "ANALYZING...";
-    
     try {
         const res = await fetch(`${BACKEND_URL}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: msg })
         });
-
-        core.classList.remove('thinking');
-        statusText.innerText = "SYSTEM IDLE";
 
         if (!res.ok) {
             const errorData = await res.json();
@@ -80,8 +73,6 @@ async function sendMessage(msg) {
         handleJarvisResponse(data);
         
     } catch (error) {
-        core.classList.remove('thinking');
-        statusText.innerText = "SYSTEM IDLE";
         addMessage("I'm having trouble connecting to my core processors, sir. Please ensure the backend is running.", 'jarvis');
         console.error(error);
     }
@@ -187,16 +178,10 @@ eventSource.addEventListener('wakeword', (e) => {
 eventSource.addEventListener('user_speech', (e) => {
     const data = JSON.parse(e.data);
     addMessage(data.text, 'user');
-    // Trigger thinking state for voice commands
-    core.classList.add('thinking');
-    statusText.innerText = "ANALYZING...";
 });
 
 eventSource.addEventListener('jarvis_response', (e) => {
     const data = JSON.parse(e.data);
-    // Hide thinking state when response arrives
-    core.classList.remove('thinking');
-    statusText.innerText = "SYSTEM IDLE";
     handleJarvisResponse(data);
 });
 

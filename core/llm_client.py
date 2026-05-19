@@ -27,7 +27,9 @@ class JARVISEngine:
             except Exception as e:
                 print(f"[!] Warning: Could not list models: {e}")
 
-            self.model_name = "gemini-1.5-flash"
+            # Allow user to override model in .env, otherwise use the most stable latest flash
+            self.model_name = os.getenv("GOOGLE_MODEL", "gemini-flash-latest")
+            print(f"[*] Gemini Model Selected: {self.model_name}")
             self.provider = "gemini"
         elif self.groq_key:
             print("[*] Initializing Groq Engine (Llama 3.3)...")
