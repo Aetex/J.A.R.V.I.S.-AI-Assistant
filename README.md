@@ -25,7 +25,24 @@ This project supports two high-performance AI engines. You can use either (or bo
 
 ## 🚀 2. Installation & Setup
 
-Choose your operating system below for specific instructions:
+We offer two installation paths depending on your technical comfort level.
+
+### Path A: Regular Users (Easiest)
+If you simply want to run J.A.R.V.I.S. without dealing with code, terminals, or Python installations, follow these steps:
+
+1. **Download**: Go to the **Releases** tab on the right side of this GitHub page.
+2. **Choose your format**:
+   - Download the `JARVIS-Setup.exe` (Interactive Installer) **OR**
+   - Download the `JARVIS-Portable.zip` (No installation required, just extract and run).
+3. **Launch**: Double-click the application to start. 
+4. **First-Time Setup**: Upon your first launch, a sleek holographic UI will prompt you to securely paste your preferred API key(s). You will only need to do this once.
+
+> ⚠️ **ANTIVIRUS WARNING**: Because the Python AI engine is bundled inside the executable, strict antivirus software (like Windows Defender) may flag the `.exe` as a "false positive" or "unrecognized app". This is completely normal for PyInstaller applications. You can safely click "More info" -> "Run anyway".
+
+---
+
+### Path B: Power Users / Developers
+If you want to edit the code, tweak the UI, or run the system natively across Windows, macOS, or Linux, follow the source-code installation below:
 
 <details>
 <summary><b>🪟 Windows Setup (Click to expand)</b></summary>
