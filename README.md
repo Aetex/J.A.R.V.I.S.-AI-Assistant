@@ -1,14 +1,19 @@
-# 💠 J.A.R.V.I.S. | The Holographic AI Assistant
+# J.A.R.V.I.S. | The Holographic AI Assistant
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Electron](https://img.shields.io/badge/platform-Electron-blueviolet.svg)](https://www.electronjs.org/)
 
+> *"I am Iron Man."*
+
 A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. This project combines a high-performance Python backend (powered by Groq or Google Gemini) with a stunning Electron-based glassmorphism HUD.
 
 ---
 
-## 🔑 1. Get Your Free API Key
+## 1. Get Your Free API Key
+
+> *"Give me a few hours. I'll have something better figured out." — Tony Stark*
+
 This project supports two high-performance AI engines. You can use either (or both!):
 
 ### Option A: Groq API
@@ -23,29 +28,35 @@ This project supports two high-performance AI engines. You can use either (or bo
 
 ---
 
-## 🚀 2. Installation & Setup
+## 2. Installation & Setup
+
+> *"Sometimes you gotta run before you can walk." — Tony Stark*
 
 We offer two installation paths depending on your technical comfort level.
 
 ### Path A: Regular Users (Easiest)
+
 If you simply want to run J.A.R.V.I.S. without dealing with code, terminals, or Python installations, follow these steps:
 
 1. **Download**: Go to the **Releases** tab on the right side of this GitHub page.
 2. **Choose your format**:
    - Download the `JARVIS-Setup.exe` (Interactive Installer) **OR**
    - Download the `JARVIS-Portable.zip` (No installation required, just extract and run).
-3. **Launch**: Double-click the application to start. 
+3. **Launch**: Double-click the application to start.
 4. **First-Time Setup**: Upon your first launch, a sleek holographic UI will prompt you to securely paste your preferred API key(s). You will only need to do this once.
 
-> ⚠️ **ANTIVIRUS WARNING**: Because the Python AI engine is bundled inside the executable, strict antivirus software (like Windows Defender) may flag the `.exe` as a "false positive" or "unrecognized app". This is completely normal for PyInstaller applications. You can safely click "More info" -> "Run anyway".
+> **ANTIVIRUS WARNING**: Because the Python AI engine is bundled inside the executable, strict antivirus software (like Windows Defender) may flag the `.exe` as a "false positive" or "unrecognized app". This is completely normal for PyInstaller applications. You can safely click "More info" -> "Run anyway".
 
 ---
 
 ### Path B: Power Users / Developers
+
+> *"Let's face it, this is not the worst thing you've caught me doing." — Tony Stark*
+
 If you want to edit the code, tweak the UI, or run the system natively across Windows, macOS, or Linux, follow the source-code installation below:
 
 <details>
-<summary><b>🪟 Windows Setup (Click to expand)</b></summary>
+<summary><b>Windows Setup (Click to expand)</b></summary>
 
 1. **Option A: Clone with Git** (Recommended):
    ```powershell
@@ -69,7 +80,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 </details>
 
 <details>
-<summary><b>🍎 macOS Setup (Click to expand)</b></summary>
+<summary><b>macOS Setup (Click to expand)</b></summary>
 
 1. **Option A: Clone with Git** (Recommended):
    ```bash
@@ -96,7 +107,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 </details>
 
 <details>
-<summary><b>🐧 Linux Setup (Click to expand)</b></summary>
+<summary><b>Linux Setup (Click to expand)</b></summary>
 
 1. **Clone the Repo**:
    ```bash
@@ -122,7 +133,10 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 
 ---
 
-## 💠 3. How to Use
+## 3. How to Use
+
+> *"JARVIS, it's time for a little upgrades." — Tony Stark*
+
 - **Activation**: Say "Jarvis" followed by your command.
 - **Modes**: Use the **[MINI]** button for a compact hologram or **[EXIT]** to shut down.
 - **Debugging**: Say "Jarvis, enter debugging mode" to see live system logs.
@@ -130,10 +144,14 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 
 ---
 
-## 🛠️ Troubleshooting
+## 4. Troubleshooting
+
+> *"I'm going to need a little time to work on that." — Tony Stark*
+
 - **Microphone not detected**: Ensure your default input device is set correctly in OS settings.
 - **Backend Error**: Verify your `.env` file contains the correct `GROQ_API_KEY`.
 - **UI not loading**: Ensure you ran `npm install` inside the `ui` folder.
 
 ---
+
 *Inspired by the MCU. Developed for the future.*
