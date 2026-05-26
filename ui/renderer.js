@@ -14,10 +14,14 @@ const volVal = document.getElementById('vol-val');
 
 const BACKEND_URL = 'http://127.0.0.1:8000';
 
-function addMessage(text, sender) {
+function addMessage(text, sender, isHTML = false) {
     const div = document.createElement('div');
     div.className = `msg msg-${sender}`;
-    div.innerText = sender === 'jarvis' ? `> ${text}` : `[USER]: ${text}`;
+    if (isHTML) {
+        div.innerHTML = sender === 'jarvis' ? `> ${text}` : `[USER]: ${text}`;
+    } else {
+        div.innerText = sender === 'jarvis' ? `> ${text}` : `[USER]: ${text}`;
+    }
     chatLog.appendChild(div);
     chatLog.scrollTop = chatLog.scrollHeight;
 }
@@ -73,7 +77,11 @@ async function sendMessage(msg) {
         handleJarvisResponse(data);
         
     } catch (error) {
-        addMessage("I'm having trouble connecting to my core processors, sir. Please ensure the backend is running.", 'jarvis');
+        addMessage("I'm having trouble connecting to my core processors, sir. Please ensure the backend is running. <span id='open-keys-err' style='color: #00f6ff; text-decoration: underline; cursor: pointer; font-weight: bold;'>Configure API Keys</span>", 'jarvis', true);
+        const errLink = document.getElementById('open-keys-err');
+        if (errLink) {
+            errLink.addEventListener('click', openSetupOverlay);
+        }
         console.error(error);
     }
 }
@@ -194,6 +202,58 @@ window.addEventListener('mousemove', (event) => {
     }
 });
 
+// First-Time Setup Logic
+async function openSetupOverlay() {
+    const status = await ipcRenderer.invoke('check-api-keys');
+    
+    // Pre-populate keys
+    document.getElementById('gemini-key-input').value = status.geminiKey || '';
+    document.getElementById('groq-key-input').value = status.groqKey || '';
+
+    const cancelBtn = document.getElementById('cancel-keys-btn');
+    const saveBtn = document.getElementById('save-keys-btn');
+
+    if (status.hasKeys) {
+        cancelBtn.style.display = 'block';
+        saveBtn.innerText = 'UPDATE CORE';
+    } else {
+        cancelBtn.style.display = 'none';
+        saveBtn.innerText = 'INITIALIZE';
+    }
+
+    document.getElementById('setup-overlay').style.display = 'flex';
+}
+
+async function checkSetup() {
+    const status = await ipcRenderer.invoke('check-api-keys');
+    if (!status.hasKeys) {
+        openSetupOverlay();
+    }
+}
+
+document.getElementById('save-keys-btn').addEventListener('click', () => {
+    const geminiKey = document.getElementById('gemini-key-input').value.trim();
+    const groqKey = document.getElementById('groq-key-input').value.trim();
+
+    if (!geminiKey && !groqKey) {
+        alert("Sir, you must provide at least one API key for me to function.");
+        return;
+    }
+
+    ipcRenderer.send('save-api-keys', { gemini: geminiKey, groq: groqKey });
+    document.getElementById('setup-overlay').style.display = 'none';
+    
+    // Attempt to connect to backend after a short delay to allow it to spin up
+    setTimeout(updateStatus, 3000);
+});
+
+document.getElementById('cancel-keys-btn').addEventListener('click', () => {
+    document.getElementById('setup-overlay').style.display = 'none';
+});
+
+document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
+
 // Init
+checkSetup();
 setInterval(updateStatus, 2000);
 updateStatus();

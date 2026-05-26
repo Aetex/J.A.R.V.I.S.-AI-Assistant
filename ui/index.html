@@ -16,7 +16,8 @@
             <div class="panel-header">
                 SYSTEM STATUS
                 <button id="exit-btn" style="float: right; background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">EXIT</button>
-                <button id="mini-toggle" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px;">MINI</button>
+                <button id="mini-toggle" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">MINI</button>
+                <button id="keys-btn" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px;">KEYS</button>
             </div>
             <div class="system-stats">
                 <div class="stat-item"><span>CPU LOAD</span><span id="cpu-val">0%</span></div>
@@ -56,6 +57,31 @@
             <div class="inner-core" style="width: 20px; height: 20px;"></div>
         </div>
         <div id="mini-text" style="position: absolute; bottom: 10px; font-family: 'Orbitron'; font-size: 0.6rem; color: #00f6ff; letter-spacing: 2px;">ACTIVE</div>
+    </div>
+
+    <!-- FIRST-TIME SETUP OVERLAY (For Packaged Executable) -->
+    <div id="setup-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 10, 20, 0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; font-family: 'Orbitron';">
+        <div class="panel" style="width: 500px; padding: 30px; text-align: center;">
+            <h2 style="color: #00f6ff; letter-spacing: 3px; margin-bottom: 20px;">SYSTEM INITIALIZATION</h2>
+            <p style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 1.1rem; margin-bottom: 30px;">
+                Welcome, Sir. To bring me online, please provide your preferred API key. You only need one, though providing both enables my fail-safe protocols.
+            </p>
+            
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px;">GOOGLE GEMINI API KEY (Recommended)</label>
+                <input type="password" id="gemini-key-input" placeholder="Paste Gemini Key here..." style="width: 100%; background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: white; padding: 10px; margin-top: 5px; font-family: monospace;">
+            </div>
+
+            <div style="margin-bottom: 30px; text-align: left;">
+                <label style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px;">GROQ API KEY (Optional Fail-safe)</label>
+                <input type="password" id="groq-key-input" placeholder="Paste Groq Key here..." style="width: 100%; background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: white; padding: 10px; margin-top: 5px; font-family: monospace;">
+            </div>
+
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="save-keys-btn" style="background: rgba(0, 246, 255, 0.2); border: 1px solid #00f6ff; color: #00f6ff; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">INITIALIZE</button>
+                <button id="cancel-keys-btn" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s; display: none;">CANCEL</button>
+            </div>
+        </div>
     </div>
 
     <script src="renderer.js"></script>

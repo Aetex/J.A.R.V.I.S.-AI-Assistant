@@ -34,6 +34,7 @@ pyinstaller --noconfirm --onedir --console --icon="icon.ico" ^
   --hidden-import="google.genai" ^
   --hidden-import="groq" ^
   --hidden-import="pyttsx3" ^
+  --collect-all "vosk" ^
   backend.py
 
 if errorlevel 1 (
