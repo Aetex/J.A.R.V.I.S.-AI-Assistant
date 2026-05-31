@@ -51,6 +51,24 @@ check_python() {
         fi
     fi
 
+    if [ "$python_install_command" = "Install Python 3 using your distro package manager." ]; then
+        if command_exists pacman; then
+            python_install_command="sudo pacman -S --needed python python-pip"
+        elif command_exists apt; then
+            python_install_command="sudo apt install -y python3 python3-venv python3-pip"
+        elif command_exists dnf; then
+            python_install_command="sudo dnf install -y python3 python3-pip"
+        elif command_exists yum; then
+            python_install_command="sudo yum install -y python3 python3-pip"
+        elif command_exists apk; then
+            python_install_command="sudo apk add python3 py3-pip"
+        elif command_exists zypper; then
+            python_install_command="sudo zypper install -y python3 python3-pip"
+        elif command_exists xbps-install; then
+            python_install_command="sudo xbps-install -Sy python3 python3-pip"
+        fi
+    fi
+
     echo "==================================================="
     echo "  J.A.R.V.I.S. SYSTEM ALERT"
     echo "==================================================="
