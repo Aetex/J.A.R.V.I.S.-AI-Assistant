@@ -26,11 +26,38 @@ check_python() {
         return 0
     fi
 
+    python_install_command="Install Python 3 using your distro package manager."
+
+    if [ -r /etc/os-release ]; then
+        . /etc/os-release
+        distro_ids=" ${ID:-} ${ID_LIKE:-} "
+
+        if echo "$distro_ids" | grep -qiE " debian | ubuntu | linuxmint | pop "; then
+            python_install_command="sudo apt install -y python3 python3-venv python3-pip"
+        elif echo "$distro_ids" | grep -qiE " arch | manjaro | endeavouros | garuda "; then
+            python_install_command="sudo pacman -S --needed python python-pip"
+        elif echo "$distro_ids" | grep -qiE " fedora | rhel | centos | rocky | almalinux "; then
+            if command_exists dnf; then
+                python_install_command="sudo dnf install -y python3 python3-pip"
+            else
+                python_install_command="sudo yum install -y python3 python3-pip"
+            fi
+        elif echo "$distro_ids" | grep -qiE " alpine "; then
+            python_install_command="sudo apk add python3 py3-pip"
+        elif echo "$distro_ids" | grep -qiE " opensuse | suse "; then
+            python_install_command="sudo zypper install -y python3 python3-pip"
+        elif echo "$distro_ids" | grep -qiE " void "; then
+            python_install_command="sudo xbps-install -Sy python3 python3-pip"
+        fi
+    fi
+
     echo "==================================================="
     echo "  J.A.R.V.I.S. SYSTEM ALERT"
     echo "==================================================="
     echo "[ERROR] Python 3 is not installed or not available on PATH."
-    echo "        Arc reactor offline. Install Python 3, then re-run this script."
+    echo "        Arc reactor offline. Please install Python 3 with:"
+    echo "        $python_install_command"
+    echo "        Then re-run this script."
     echo "==================================================="
     exit 1
 }

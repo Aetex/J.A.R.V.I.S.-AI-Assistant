@@ -16,7 +16,11 @@ if %errorlevel% neq 0 (
     echo   J.A.R.V.I.S. SYSTEM ALERT
     echo ===================================================
     echo [ERROR] Python is not installed or not available on PATH.
-    echo         Arc reactor offline. Install Python, then re-run this installer.
+    echo         Arc reactor offline. Please install Python from:
+    echo         https://www.python.org/downloads/windows/
+    echo.
+    echo         During setup, enable "Add python.exe to PATH".
+    echo         Then re-run this installer.
     echo ===================================================
     pause
     exit /b 1

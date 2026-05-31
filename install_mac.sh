@@ -22,7 +22,10 @@ check_python() {
     echo "  J.A.R.V.I.S. SYSTEM ALERT"
     echo "==================================================="
     echo "[ERROR] Python 3 is not installed or not available on PATH."
-    echo "        Arc reactor offline. Install Python 3, then re-run this script."
+    echo "        Arc reactor offline. Please install Python 3:"
+    echo "        Option A: Download it from https://www.python.org/downloads/macos/"
+    echo "        Option B: brew install python"
+    echo "        Then re-run this script."
     echo "==================================================="
     exit 1
 }
