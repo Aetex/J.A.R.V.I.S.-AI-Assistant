@@ -86,9 +86,9 @@ install_system_dependencies() {
     if [ -r /etc/os-release ]; then
         . /etc/os-release
     else
-        echo "[WARN] Could not detect Linux distribution. Skipping system dependency install."
-        echo "       Please install python-pyaudio, portaudio, nodejs, and npm using your distro package manager."
-        return 0
+        ID=""
+        ID_LIKE=""
+        PRETTY_NAME="unknown"
     fi
 
     distro_ids=" ${ID:-} ${ID_LIKE:-} "
@@ -109,8 +109,22 @@ install_system_dependencies() {
         run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
     elif echo "$distro_ids" | grep -qiE "(^| )(void)( |$)"; then
         run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
+    elif command_exists pacman; then
+        run_as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm
+    elif command_exists apt; then
+        run_as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm
+    elif command_exists dnf; then
+        run_as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm
+    elif command_exists yum; then
+        run_as_root yum install -y python3-pyaudio portaudio-devel nodejs npm
+    elif command_exists apk; then
+        run_as_root apk add py3-pyaudio portaudio-dev nodejs npm
+    elif command_exists zypper; then
+        run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
+    elif command_exists xbps-install; then
+        run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
     else
-        echo "[WARN] Unsupported distribution: ${PRETTY_NAME:-unknown}"
+        echo "[WARN] Could not detect Linux distribution or supported package manager."
         echo "       Please install python-pyaudio, portaudio, nodejs, and npm using your distro package manager."
         return 0
     fi
