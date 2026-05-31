@@ -9,6 +9,21 @@ echo.
 set "BASE_DIR=%~dp0"
 cd /d "%BASE_DIR%"
 
+echo [*] Pre-flight: Checking Python...
+where python > nul 2>&1
+if %errorlevel% neq 0 (
+    echo ===================================================
+    echo   J.A.R.V.I.S. SYSTEM ALERT
+    echo ===================================================
+    echo [ERROR] Python is not installed or not available on PATH.
+    echo         Arc reactor offline. Install Python, then re-run this installer.
+    echo ===================================================
+    pause
+    exit /b 1
+)
+for /f "tokens=*" %%v in ('python --version 2^>^&1') do echo [OK] Python detected: %%v
+echo.
+
 echo [*] Step 1: Checking Node.js and npm...
 where node > nul 2>&1
 if %errorlevel% neq 0 (

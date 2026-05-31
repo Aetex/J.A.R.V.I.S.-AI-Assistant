@@ -18,6 +18,23 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+check_python() {
+    echo "[*] Pre-flight: Checking Python..."
+
+    if command_exists python3; then
+        echo "[OK] Python detected: $(python3 --version 2>&1)"
+        return 0
+    fi
+
+    echo "==================================================="
+    echo "  J.A.R.V.I.S. SYSTEM ALERT"
+    echo "==================================================="
+    echo "[ERROR] Python 3 is not installed or not available on PATH."
+    echo "        Arc reactor offline. Install Python 3, then re-run this script."
+    echo "==================================================="
+    exit 1
+}
+
 install_system_dependencies() {
     echo "[*] Step 1: Installing system dependencies..."
 
@@ -55,6 +72,9 @@ install_system_dependencies() {
 
     echo "[OK] System dependencies installed."
 }
+
+check_python
+echo ""
 
 install_system_dependencies
 echo ""
