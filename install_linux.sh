@@ -32,21 +32,21 @@ check_python() {
         . /etc/os-release
         distro_ids=" ${ID:-} ${ID_LIKE:-} "
 
-        if echo "$distro_ids" | grep -qiE " debian | ubuntu | linuxmint | pop "; then
+        if echo "$distro_ids" | grep -qiE "(^| )(debian|ubuntu|linuxmint|pop)( |$)"; then
             python_install_command="sudo apt install -y python3 python3-venv python3-pip"
-        elif echo "$distro_ids" | grep -qiE " arch | manjaro | endeavouros | garuda "; then
+        elif echo "$distro_ids" | grep -qiE "(^| )(arch|archlinux|manjaro|endeavouros|garuda)( |$)"; then
             python_install_command="sudo pacman -S --needed python python-pip"
-        elif echo "$distro_ids" | grep -qiE " fedora | rhel | centos | rocky | almalinux "; then
+        elif echo "$distro_ids" | grep -qiE "(^| )(fedora|rhel|centos|rocky|almalinux)( |$)"; then
             if command_exists dnf; then
                 python_install_command="sudo dnf install -y python3 python3-pip"
             else
                 python_install_command="sudo yum install -y python3 python3-pip"
             fi
-        elif echo "$distro_ids" | grep -qiE " alpine "; then
+        elif echo "$distro_ids" | grep -qiE "(^| )(alpine)( |$)"; then
             python_install_command="sudo apk add python3 py3-pip"
-        elif echo "$distro_ids" | grep -qiE " opensuse | suse "; then
+        elif echo "$distro_ids" | grep -qiE "(^| )(opensuse|opensuse-tumbleweed|opensuse-leap|suse)( |$)"; then
             python_install_command="sudo zypper install -y python3 python3-pip"
-        elif echo "$distro_ids" | grep -qiE " void "; then
+        elif echo "$distro_ids" | grep -qiE "(^| )(void)( |$)"; then
             python_install_command="sudo xbps-install -Sy python3 python3-pip"
         fi
     fi
@@ -75,21 +75,21 @@ install_system_dependencies() {
 
     distro_ids=" ${ID:-} ${ID_LIKE:-} "
 
-    if echo "$distro_ids" | grep -qiE " debian | ubuntu | linuxmint | pop "; then
+    if echo "$distro_ids" | grep -qiE "(^| )(debian|ubuntu|linuxmint|pop)( |$)"; then
         run_as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm
-    elif echo "$distro_ids" | grep -qiE " arch | manjaro | endeavouros | garuda "; then
+    elif echo "$distro_ids" | grep -qiE "(^| )(arch|archlinux|manjaro|endeavouros|garuda)( |$)"; then
         run_as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm
-    elif echo "$distro_ids" | grep -qiE " fedora | rhel | centos | rocky | almalinux "; then
+    elif echo "$distro_ids" | grep -qiE "(^| )(fedora|rhel|centos|rocky|almalinux)( |$)"; then
         if command_exists dnf; then
             run_as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm
         else
             run_as_root yum install -y python3-pyaudio portaudio-devel nodejs npm
         fi
-    elif echo "$distro_ids" | grep -qiE " alpine "; then
+    elif echo "$distro_ids" | grep -qiE "(^| )(alpine)( |$)"; then
         run_as_root apk add py3-pyaudio portaudio-dev nodejs npm
-    elif echo "$distro_ids" | grep -qiE " opensuse | suse "; then
+    elif echo "$distro_ids" | grep -qiE "(^| )(opensuse|opensuse-tumbleweed|opensuse-leap|suse)( |$)"; then
         run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
-    elif echo "$distro_ids" | grep -qiE " void "; then
+    elif echo "$distro_ids" | grep -qiE "(^| )(void)( |$)"; then
         run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
     else
         echo "[WARN] Unsupported distribution: ${PRETTY_NAME:-unknown}"
