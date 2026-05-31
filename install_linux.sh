@@ -6,7 +6,60 @@ echo ""
 
 cd "$(dirname "$0")"
 
-echo "[*] Step 1: Creating Python Virtual Environment..."
+run_as_root() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+install_system_dependencies() {
+    echo "[*] Step 1: Installing system dependencies..."
+
+    if [ -r /etc/os-release ]; then
+        . /etc/os-release
+    else
+        echo "[WARN] Could not detect Linux distribution. Skipping system dependency install."
+        echo "       Please install python-pyaudio, portaudio, nodejs, and npm using your distro package manager."
+        return 0
+    fi
+
+    distro_ids=" ${ID:-} ${ID_LIKE:-} "
+
+    if echo "$distro_ids" | grep -qiE " debian | ubuntu | linuxmint | pop "; then
+        run_as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm
+    elif echo "$distro_ids" | grep -qiE " arch | manjaro | endeavouros | garuda "; then
+        run_as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm
+    elif echo "$distro_ids" | grep -qiE " fedora | rhel | centos | rocky | almalinux "; then
+        if command_exists dnf; then
+            run_as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm
+        else
+            run_as_root yum install -y python3-pyaudio portaudio-devel nodejs npm
+        fi
+    elif echo "$distro_ids" | grep -qiE " alpine "; then
+        run_as_root apk add py3-pyaudio portaudio-dev nodejs npm
+    elif echo "$distro_ids" | grep -qiE " opensuse | suse "; then
+        run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
+    elif echo "$distro_ids" | grep -qiE " void "; then
+        run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
+    else
+        echo "[WARN] Unsupported distribution: ${PRETTY_NAME:-unknown}"
+        echo "       Please install python-pyaudio, portaudio, nodejs, and npm using your distro package manager."
+        return 0
+    fi
+
+    echo "[OK] System dependencies installed."
+}
+
+install_system_dependencies
+echo ""
+
+echo "[*] Step 2: Creating Python Virtual Environment..."
 if [ ! -d "venv" ]; then
     python3 -m venv venv
     echo "[OK] Virtual environment created."
@@ -15,14 +68,14 @@ else
 fi
 echo ""
 
-echo "[*] Step 2: Installing Python Core Dependencies..."
+echo "[*] Step 3: Installing Python Core Dependencies..."
 source venv/bin/activate
 python3 -m pip install --upgrade pip > /dev/null 2>&1
 pip install -r requirements.txt
 echo "[OK] Python dependencies installed."
 echo ""
 
-echo "[*] Step 3: Installing UI Components..."
+echo "[*] Step 4: Installing UI Components..."
 cd ui
 npm install
 cd ..
