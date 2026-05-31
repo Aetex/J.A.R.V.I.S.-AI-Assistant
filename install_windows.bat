@@ -9,6 +9,25 @@ echo.
 set "BASE_DIR=%~dp0"
 cd /d "%BASE_DIR%"
 
+goto after_jokes
+
+:joke_python
+echo         JARVIS: I appear to be missing a brain, sir. Python would be a fine place to start.
+exit /b 0
+
+:joke_node
+echo         Tony Stark: No Node? That's not a setup, that's a cry for an upgrade.
+exit /b 0
+
+:joke_pip
+echo         Tony Stark: Dependency chaos. Classic. I usually fix this with a suit and questionable confidence.
+exit /b 0
+
+:joke_ui
+echo         JARVIS: The HUD refuses to assemble. Even Stark tech needs its npm bolts tightened.
+exit /b 0
+
+:after_jokes
 echo [*] Pre-flight: Checking Python...
 where python > nul 2>&1
 if %errorlevel% neq 0 (
@@ -16,6 +35,7 @@ if %errorlevel% neq 0 (
     echo   J.A.R.V.I.S. SYSTEM ALERT
     echo ===================================================
     echo [ERROR] Python is not installed or not available on PATH.
+    call :joke_python
     echo         Arc reactor offline. Please install Python from:
     echo         https://www.python.org/downloads/windows/
     echo.
@@ -57,12 +77,14 @@ if %errorlevel% equ 0 (
 )
 
 echo [ERROR] Could not find winget or Chocolatey to install Node.js automatically.
+call :joke_node
 echo         Install Node.js LTS from https://nodejs.org/ and re-run this installer.
 pause
 exit /b 1
 
 :node_install_failed
 echo [ERROR] Node.js installation failed.
+call :joke_node
 echo         Install Node.js LTS from https://nodejs.org/ and re-run this installer.
 pause
 exit /b 1
@@ -72,6 +94,7 @@ set "PATH=%ProgramFiles%\nodejs;%AppData%\npm;%PATH%"
 where node > nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Node.js was installed, but it is not available in this terminal yet.
+    call :joke_node
     echo         Close this window, open a new terminal, and re-run this installer.
     pause
     exit /b 1
@@ -79,6 +102,7 @@ if %errorlevel% neq 0 (
 where npm > nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] npm was installed, but it is not available in this terminal yet.
+    call :joke_node
     echo         Close this window, open a new terminal, and re-run this installer.
     pause
     exit /b 1
@@ -102,12 +126,14 @@ call "%BASE_DIR%venv\Scripts\activate.bat"
 python -m pip install --upgrade pip > nul
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to upgrade pip.
+    call :joke_pip
     pause
     exit /b 1
 )
 pip install -r requirements.txt
 if %errorlevel% neq 0 (
     echo [ERROR] Python dependency installation failed.
+    call :joke_pip
     pause
     exit /b 1
 )
@@ -119,6 +145,7 @@ cd ui
 call npm install
 if %errorlevel% neq 0 (
     echo [ERROR] UI dependency installation failed.
+    call :joke_ui
     pause
     exit /b 1
 )

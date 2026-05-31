@@ -4,6 +4,10 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Electron](https://img.shields.io/badge/platform-Electron-blueviolet.svg)](https://www.electronjs.org/)
 
+**Current version:** v0.3
+
+> **Development warning:** JARVIS v0.3 is still under active development. Expect some rough edges and possible bugs while the systems are being upgraded.
+
 > *"I am Iron Man."*
 
 A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. This project combines a high-performance Python backend (powered by Groq or Google Gemini) with a stunning Electron-based glassmorphism HUD.
@@ -105,18 +109,16 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
-2. **Dependencies**:
-   Ensure you have `pyaudio` dependencies: `sudo apt-get install python3-pyaudio portaudio19-dev`
-3. **Run the Installer**:
+2. **Run the Installer**:
    ```bash
    sh install_linux.sh
    ```
-4. **Configure API**:
+3. **Configure API**:
    - Rename `.env.example` to `.env`.
    - Open `.env` and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
-5. **Run**:
+4. **Run**:
    ```bash
    sh launch_jarvis.sh
    ```

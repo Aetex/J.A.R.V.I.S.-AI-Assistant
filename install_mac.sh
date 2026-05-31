@@ -10,6 +10,16 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+jarvis_error_joke() {
+    case "$1" in
+        python) echo "        JARVIS: I appear to be missing a brain, sir. Python would be a fine place to start." ;;
+        node) echo "        Tony Stark: No Node? That's not a setup, that's a cry for an upgrade." ;;
+        pip) echo "        Tony Stark: Dependency chaos. Classic. I usually fix this with a suit and questionable confidence." ;;
+        ui) echo "        JARVIS: The HUD refuses to assemble. Even Stark tech needs its npm bolts tightened." ;;
+        *) echo "        JARVIS: Something broke, sir. I recommend blaming physics until we find the log." ;;
+    esac
+}
+
 check_python() {
     echo "[*] Pre-flight: Checking Python..."
 
@@ -22,6 +32,7 @@ check_python() {
     echo "  J.A.R.V.I.S. SYSTEM ALERT"
     echo "==================================================="
     echo "[ERROR] Python 3 is not installed or not available on PATH."
+    jarvis_error_joke python
     echo "        Arc reactor offline. Please install Python 3:"
     echo "        Option A: Download it from https://www.python.org/downloads/macos/"
     echo "        Option B: brew install python"
@@ -51,11 +62,16 @@ install_node_dependencies() {
 
     if ! command_exists brew; then
         echo "[ERROR] Homebrew installation was not found on PATH."
+        jarvis_error_joke node
         echo "        Install Node.js from https://nodejs.org/ and re-run this script."
         exit 1
     fi
 
-    brew install node
+    brew install node || {
+        echo "[ERROR] Node.js/npm installation failed."
+        jarvis_error_joke node
+        exit 1
+    }
     echo "[OK] Node.js and npm installed."
 }
 
@@ -78,10 +94,12 @@ echo "[*] Step 3: Installing Python Core Dependencies..."
 source venv/bin/activate
 python3 -m pip install --upgrade pip > /dev/null 2>&1 || {
     echo "[ERROR] Failed to upgrade pip."
+    jarvis_error_joke pip
     exit 1
 }
 pip install -r requirements.txt || {
     echo "[ERROR] Python dependency installation failed."
+    jarvis_error_joke pip
     exit 1
 }
 echo "[OK] Python dependencies installed."
@@ -91,6 +109,7 @@ echo "[*] Step 4: Installing UI Components..."
 cd ui
 npm install || {
     echo "[ERROR] UI dependency installation failed."
+    jarvis_error_joke ui
     exit 1
 }
 cd ..
