@@ -100,13 +100,28 @@ echo.
 echo [*] Step 3: Installing Python Core Dependencies...
 call "%BASE_DIR%venv\Scripts\activate.bat"
 python -m pip install --upgrade pip > nul
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to upgrade pip.
+    pause
+    exit /b 1
+)
 pip install -r requirements.txt
+if %errorlevel% neq 0 (
+    echo [ERROR] Python dependency installation failed.
+    pause
+    exit /b 1
+)
 echo [OK] Python dependencies installed.
 echo.
 
 echo [*] Step 4: Installing UI Components...
 cd ui
 call npm install
+if %errorlevel% neq 0 (
+    echo [ERROR] UI dependency installation failed.
+    pause
+    exit /b 1
+)
 cd ..
 echo [OK] UI components installed.
 echo.

@@ -149,14 +149,23 @@ echo ""
 
 echo "[*] Step 3: Installing Python Core Dependencies..."
 source venv/bin/activate
-python3 -m pip install --upgrade pip > /dev/null 2>&1
-pip install -r requirements.txt
+python3 -m pip install --upgrade pip > /dev/null 2>&1 || {
+    echo "[ERROR] Failed to upgrade pip."
+    exit 1
+}
+pip install -r requirements.txt || {
+    echo "[ERROR] Python dependency installation failed."
+    exit 1
+}
 echo "[OK] Python dependencies installed."
 echo ""
 
 echo "[*] Step 4: Installing UI Components..."
 cd ui
-npm install
+npm install || {
+    echo "[ERROR] UI dependency installation failed."
+    exit 1
+}
 cd ..
 echo "[OK] UI components installed."
 echo ""
