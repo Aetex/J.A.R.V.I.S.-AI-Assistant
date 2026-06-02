@@ -28,6 +28,43 @@ jarvis_error_joke() {
     esac
 }
 
+run_with_spinner() {
+    message="$1"
+    shift
+    log_file="$(mktemp)"
+
+    "$@" > "$log_file" 2>&1 &
+    pid=$!
+    i=0
+
+    while kill -0 "$pid" 2>/dev/null; do
+        i=$(( (i + 1) % 4 ))
+        case "$i" in
+            0) spin='|' ;;
+            1) spin='/' ;;
+            2) spin='-' ;;
+            *) spin='\' ;;
+        esac
+        printf "\r[*] %s %s" "$message" "$spin"
+        sleep 0.12
+    done
+
+    wait "$pid"
+    status=$?
+    printf "\r"
+
+    if [ "$status" -ne 0 ]; then
+        echo "[ERROR] $message failed. Diagnostic output:"
+        cat "$log_file"
+        rm -f "$log_file"
+        return "$status"
+    fi
+
+    rm -f "$log_file"
+    echo "[OK] $message complete."
+    return 0
+}
+
 check_python() {
     echo "[*] Pre-flight: Checking Python..."
 
@@ -103,44 +140,56 @@ install_system_dependencies() {
     fi
 
     distro_ids=" ${ID:-} ${ID_LIKE:-} "
+    as_root=""
+    if [ "$(id -u)" -ne 0 ]; then
+        as_root="sudo"
+    fi
 
     if echo "$distro_ids" | grep -qiE "(^| )(debian|ubuntu|linuxmint|pop)( |$)"; then
-        run_as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm
+        install_cmd="$as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(arch|archlinux|manjaro|endeavouros|garuda)( |$)"; then
-        run_as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm
+        install_cmd="$as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(fedora|rhel|centos|rocky|almalinux)( |$)"; then
         if command_exists dnf; then
-            run_as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm
+            install_cmd="$as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm"
         else
-            run_as_root yum install -y python3-pyaudio portaudio-devel nodejs npm
+            install_cmd="$as_root yum install -y python3-pyaudio portaudio-devel nodejs npm"
         fi
     elif echo "$distro_ids" | grep -qiE "(^| )(alpine)( |$)"; then
-        run_as_root apk add py3-pyaudio portaudio-dev nodejs npm
+        install_cmd="$as_root apk add py3-pyaudio portaudio-dev nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(opensuse|opensuse-tumbleweed|opensuse-leap|suse)( |$)"; then
-        run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
+        install_cmd="$as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(void)( |$)"; then
-        run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
+        install_cmd="$as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm"
     elif command_exists pacman; then
-        run_as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm
+        install_cmd="$as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm"
     elif command_exists apt; then
-        run_as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm
+        install_cmd="$as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm"
     elif command_exists dnf; then
-        run_as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm
+        install_cmd="$as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm"
     elif command_exists yum; then
-        run_as_root yum install -y python3-pyaudio portaudio-devel nodejs npm
+        install_cmd="$as_root yum install -y python3-pyaudio portaudio-devel nodejs npm"
     elif command_exists apk; then
-        run_as_root apk add py3-pyaudio portaudio-dev nodejs npm
+        install_cmd="$as_root apk add py3-pyaudio portaudio-dev nodejs npm"
     elif command_exists zypper; then
-        run_as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm
+        install_cmd="$as_root zypper install -y python3-PyAudio portaudio-devel nodejs npm"
     elif command_exists xbps-install; then
-        run_as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm
+        install_cmd="$as_root xbps-install -Sy python3-PyAudio portaudio-devel nodejs npm"
     else
         echo "[WARN] Could not detect Linux distribution or supported package manager."
         echo "       Please install python-pyaudio, portaudio, nodejs, and npm using your distro package manager."
         return 0
     fi
 
-    if [ $? -ne 0 ]; then
+    if [ "$(id -u)" -ne 0 ] && command_exists sudo; then
+        sudo -v || {
+            echo "[ERROR] Administrator authentication failed."
+            jarvis_error_joke system
+            exit 1
+        }
+    fi
+
+    if ! run_with_spinner "Installing system dependencies" sh -c "$install_cmd"; then
         echo "[ERROR] System dependency installation failed."
         jarvis_error_joke system
         exit 1
@@ -166,12 +215,12 @@ echo ""
 
 echo "[*] Step 3: Installing Python Core Dependencies..."
 source venv/bin/activate
-python3 -m pip install --upgrade pip > /dev/null 2>&1 || {
+run_with_spinner "Upgrading pip" python3 -m pip install --upgrade pip || {
     echo "[ERROR] Failed to upgrade pip."
     jarvis_error_joke pip
     exit 1
 }
-pip install -r requirements.txt || {
+run_with_spinner "Installing Python dependencies" pip install --progress-bar off -r requirements.txt || {
     echo "[ERROR] Python dependency installation failed."
     jarvis_error_joke pip
     exit 1
@@ -181,7 +230,7 @@ echo ""
 
 echo "[*] Step 4: Installing UI Components..."
 cd ui
-npm install || {
+run_with_spinner "Installing UI components" npm install --silent || {
     echo "[ERROR] UI dependency installation failed."
     jarvis_error_joke ui
     exit 1

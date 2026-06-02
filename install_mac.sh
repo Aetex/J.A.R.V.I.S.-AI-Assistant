@@ -20,6 +20,43 @@ jarvis_error_joke() {
     esac
 }
 
+run_with_spinner() {
+    message="$1"
+    shift
+    log_file="$(mktemp)"
+
+    "$@" > "$log_file" 2>&1 &
+    pid=$!
+    i=0
+
+    while kill -0 "$pid" 2>/dev/null; do
+        i=$(( (i + 1) % 4 ))
+        case "$i" in
+            0) spin='|' ;;
+            1) spin='/' ;;
+            2) spin='-' ;;
+            *) spin='\' ;;
+        esac
+        printf "\r[*] %s %s" "$message" "$spin"
+        sleep 0.12
+    done
+
+    wait "$pid"
+    status=$?
+    printf "\r"
+
+    if [ "$status" -ne 0 ]; then
+        echo "[ERROR] $message failed. Diagnostic output:"
+        cat "$log_file"
+        rm -f "$log_file"
+        return "$status"
+    fi
+
+    rm -f "$log_file"
+    echo "[OK] $message complete."
+    return 0
+}
+
 check_python() {
     echo "[*] Pre-flight: Checking Python..."
 
@@ -51,7 +88,11 @@ install_node_dependencies() {
 
     if ! command_exists brew; then
         echo "[*] Homebrew is required to install Node.js/npm. Installing Homebrew..."
-        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        run_with_spinner "Installing Homebrew" env NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+            echo "[ERROR] Homebrew installation failed."
+            jarvis_error_joke node
+            exit 1
+        }
 
         if [ -x "/opt/homebrew/bin/brew" ]; then
             eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -67,7 +108,7 @@ install_node_dependencies() {
         exit 1
     fi
 
-    brew install node || {
+    run_with_spinner "Installing Node.js and npm" brew install node || {
         echo "[ERROR] Node.js/npm installation failed."
         jarvis_error_joke node
         exit 1
@@ -92,12 +133,12 @@ echo ""
 
 echo "[*] Step 3: Installing Python Core Dependencies..."
 source venv/bin/activate
-python3 -m pip install --upgrade pip > /dev/null 2>&1 || {
+run_with_spinner "Upgrading pip" python3 -m pip install --upgrade pip || {
     echo "[ERROR] Failed to upgrade pip."
     jarvis_error_joke pip
     exit 1
 }
-pip install -r requirements.txt || {
+run_with_spinner "Installing Python dependencies" pip install --progress-bar off -r requirements.txt || {
     echo "[ERROR] Python dependency installation failed."
     jarvis_error_joke pip
     exit 1
@@ -107,7 +148,7 @@ echo ""
 
 echo "[*] Step 4: Installing UI Components..."
 cd ui
-npm install || {
+run_with_spinner "Installing UI components" npm install --silent || {
     echo "[ERROR] UI dependency installation failed."
     jarvis_error_joke ui
     exit 1

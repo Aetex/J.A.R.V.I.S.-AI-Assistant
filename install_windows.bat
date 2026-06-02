@@ -27,6 +27,13 @@ exit /b 0
 echo         JARVIS: The HUD refuses to assemble. Even Stark tech needs its npm bolts tightened.
 exit /b 0
 
+:run_spinner
+set "SPIN_MSG=%~1"
+set "SPIN_CMD=%~2"
+set "SPIN_LOG=%TEMP%\jarvis-install-%RANDOM%.log"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$msg=$env:SPIN_MSG; $cmd=$env:SPIN_CMD + ' > \"' + $env:SPIN_LOG + '\" 2>&1'; $log=$env:SPIN_LOG; $p=Start-Process -FilePath 'cmd.exe' -ArgumentList '/d','/s','/c',$cmd -WindowStyle Hidden -PassThru; $spin='|','/','-','\'; $i=0; while(-not $p.HasExited){ Write-Host -NoNewline (\"`r[*] {0} {1}\" -f $msg,$spin[$i%%4]); Start-Sleep -Milliseconds 120; $i++ }; $p.WaitForExit(); Write-Host -NoNewline \"`r\"; if($p.ExitCode -ne 0){ Write-Host \"[ERROR] $msg failed. Diagnostic output:\"; if(Test-Path $log){ Get-Content $log; Remove-Item $log -ErrorAction SilentlyContinue }; exit $p.ExitCode }; if(Test-Path $log){ Remove-Item $log -ErrorAction SilentlyContinue }; Write-Host \"[OK] $msg complete.\"; exit 0"
+exit /b %errorlevel%
+
 :after_jokes
 echo [*] Pre-flight: Checking Python...
 where python > nul 2>&1
@@ -64,14 +71,14 @@ goto node_done
 echo [*] Installing Node.js LTS...
 where winget > nul 2>&1
 if %errorlevel% equ 0 (
-    winget install --id OpenJS.NodeJS.LTS -e --accept-package-agreements --accept-source-agreements
+    call :run_spinner "Installing Node.js LTS" "winget install --id OpenJS.NodeJS.LTS -e --accept-package-agreements --accept-source-agreements"
     if %errorlevel% neq 0 goto node_install_failed
     goto refresh_node_path
 )
 
 where choco > nul 2>&1
 if %errorlevel% equ 0 (
-    choco install nodejs-lts -y
+    call :run_spinner "Installing Node.js LTS" "choco install nodejs-lts -y"
     if %errorlevel% neq 0 goto node_install_failed
     goto refresh_node_path
 )
@@ -123,14 +130,14 @@ echo.
 
 echo [*] Step 3: Installing Python Core Dependencies...
 call "%BASE_DIR%venv\Scripts\activate.bat"
-python -m pip install --upgrade pip > nul
+call :run_spinner "Upgrading pip" "python -m pip install --upgrade pip"
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to upgrade pip.
     call :joke_pip
     pause
     exit /b 1
 )
-pip install -r requirements.txt
+call :run_spinner "Installing Python dependencies" "pip install --progress-bar off -r requirements.txt"
 if %errorlevel% neq 0 (
     echo [ERROR] Python dependency installation failed.
     call :joke_pip
@@ -142,7 +149,7 @@ echo.
 
 echo [*] Step 4: Installing UI Components...
 cd ui
-call npm install
+call :run_spinner "Installing UI components" "npm install --silent"
 if %errorlevel% neq 0 (
     echo [ERROR] UI dependency installation failed.
     call :joke_ui
