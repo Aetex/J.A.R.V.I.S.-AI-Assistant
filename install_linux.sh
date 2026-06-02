@@ -54,9 +54,14 @@ run_with_spinner() {
     printf "\r"
 
     if [ "$status" -ne 0 ]; then
-        echo "[ERROR] $message failed. Diagnostic output:"
-        cat "$log_file"
-        rm -f "$log_file"
+        saved_log="./jarvis-install-error.log"
+        mv "$log_file" "$saved_log"
+        echo "[ERROR] $message failed."
+        if grep -qiE "Failed to resolve|NameResolutionError|Temporary failure|Could not resolve|unreachable network|Network is unreachable" "$saved_log"; then
+            echo "        Network connection failed. Check your internet/DNS, then re-run this installer."
+        else
+            echo "        Full technical details were saved to $saved_log"
+        fi
         return "$status"
     fi
 
