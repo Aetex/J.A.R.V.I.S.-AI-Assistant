@@ -54,7 +54,7 @@ run_with_spinner() {
     printf "\r"
 
     if [ "$status" -ne 0 ]; then
-        saved_log="./jarvis-install-error.log"
+        saved_log="./jarvis-install-log.log"
         mv "$log_file" "$saved_log"
         echo "[ERROR] $message failed."
         if grep -qiE "Failed to resolve|NameResolutionError|Temporary failure|Could not resolve|unreachable network|Network is unreachable" "$saved_log"; then
