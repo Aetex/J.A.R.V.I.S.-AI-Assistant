@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 
 # Start the Python Backend in the background (silent)
 echo "[*] Powering up neural processors..."
-source ./venv/bin/activate
+. ./venv/bin/activate
 python3 backend.py > /dev/null 2>&1 &
 
 # Wait for it to spin up

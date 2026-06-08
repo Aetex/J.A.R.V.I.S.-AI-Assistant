@@ -137,7 +137,7 @@ fi
 echo ""
 
 echo "[*] Step 3: Installing Python Core Dependencies..."
-source venv/bin/activate
+. venv/bin/activate
 run_with_spinner "Upgrading pip" python3 -m pip install --upgrade pip || {
     echo "[ERROR] Failed to upgrade pip."
     jarvis_error_joke pip

@@ -147,21 +147,11 @@ install_system_dependencies() {
     distro_ids=" ${ID:-} ${ID_LIKE:-} "
     as_root=""
     if [ "$(id -u)" -ne 0 ]; then
-        if command_exists sudo; then
-            as_root="sudo"
-        else
-            echo "==================================================="
-            echo "  J.A.R.V.I.S. SYSTEM ALERT"
-            echo "==================================================="
-            echo "[ERROR] This script must install system dependencies, but 'sudo' is not installed."
-            echo "        Please run this script as root (e.g., run 'su' first, then run 'sh install_linux.sh')."
-            echo "==================================================="
-            exit 1
-        fi
+        as_root="sudo"
     fi
 
     if echo "$distro_ids" | grep -qiE "(^| )(debian|ubuntu|linuxmint|pop)( |$)"; then
-        install_cmd="$as_root apt install -y python3-pip python3-venv python3-pyaudio portaudio19-dev nodejs npm"
+        install_cmd="$as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(arch|archlinux|manjaro|endeavouros|garuda)( |$)"; then
         install_cmd="$as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm"
     elif echo "$distro_ids" | grep -qiE "(^| )(fedora|rhel|centos|rocky|almalinux)( |$)"; then
@@ -179,7 +169,7 @@ install_system_dependencies() {
     elif command_exists pacman; then
         install_cmd="$as_root pacman -S --needed --noconfirm python-pyaudio portaudio nodejs npm"
     elif command_exists apt; then
-        install_cmd="$as_root apt install -y python3-pip python3-venv python3-pyaudio portaudio19-dev nodejs npm"
+        install_cmd="$as_root apt install -y python3-pyaudio portaudio19-dev nodejs npm"
     elif command_exists dnf; then
         install_cmd="$as_root dnf install -y python3-pyaudio portaudio-devel nodejs npm"
     elif command_exists yum; then
