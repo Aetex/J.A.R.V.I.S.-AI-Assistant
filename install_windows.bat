@@ -164,23 +164,27 @@ echo [*] Step 5: Downloading Kokoro TTS Models...
 if not exist "voice" mkdir voice
 
 if not exist "voice\kokoro-v1.0.onnx" (
-    call :run_spinner "Downloading kokoro-v1.0.onnx (this may take a moment)" "powershell -Command \"Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx' -OutFile 'voice\kokoro-v1.0.onnx'\""
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to download kokoro-v1.0.onnx
+    echo Downloading kokoro-v1.0.onnx - approx 300MB, this may take a moment...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx' -OutFile 'voice\kokoro-v1.0.onnx'"
+    if errorlevel 1 (
+        echo [ERROR] Failed to download kokoro-v1.0.onnx.
         pause
         exit /b 1
     )
+    echo [OK] Downloaded kokoro-v1.0.onnx.
 ) else (
     echo [OK] kokoro-v1.0.onnx already exists.
 )
 
 if not exist "voice\voices-v1.0.bin" (
-    call :run_spinner "Downloading voices-v1.0.bin" "powershell -Command \"Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin' -OutFile 'voice\voices-v1.0.bin'\""
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to download voices-v1.0.bin
+    echo Downloading voices-v1.0.bin - approx 20MB...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin' -OutFile 'voice\voices-v1.0.bin'"
+    if errorlevel 1 (
+        echo [ERROR] Failed to download voices-v1.0.bin.
         pause
         exit /b 1
     )
+    echo [OK] Downloaded voices-v1.0.bin.
 ) else (
     echo [OK] voices-v1.0.bin already exists.
 )

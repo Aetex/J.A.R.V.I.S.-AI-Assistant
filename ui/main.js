@@ -221,7 +221,59 @@ ipcMain.on('save-api-keys', (event, keys) => {
   startBackend();
 });
 
+function syncStoreToEnv() {
+  const groqKey = store.get('groqKey') || '';
+  const geminiKey = store.get('geminiKey') || '';
+  
+  if (!groqKey && !geminiKey) return; // No keys saved in Store to sync
+
+  const envPath = path.join(__dirname, '..', '.env');
+  try {
+    let envContent = '';
+    let needsUpdate = false;
+    
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+      
+      const groqMatch = envContent.match(/GROQ_API_KEY\s*=\s*["']?([^"'\r\n]*)["']?/);
+      const geminiMatch = envContent.match(/GOOGLE_API_KEY\s*=\s*["']?([^"'\r\n]*)["']?/);
+      
+      const currentGroq = groqMatch ? groqMatch[1] : '';
+      const currentGemini = geminiMatch ? geminiMatch[1] : '';
+      
+      if (groqKey && currentGroq !== groqKey) needsUpdate = true;
+      if (geminiKey && currentGemini !== geminiKey) needsUpdate = true;
+    } else {
+      needsUpdate = true;
+      const examplePath = path.join(__dirname, '..', '.env.example');
+      if (fs.existsSync(examplePath)) {
+        envContent = fs.readFileSync(examplePath, 'utf8');
+      }
+    }
+
+    if (needsUpdate) {
+      if (envContent.includes('GROQ_API_KEY')) {
+        envContent = envContent.replace(/GROQ_API_KEY\s*=\s*["']?[^"'\r\n]*["']?/, `GROQ_API_KEY="${groqKey}"`);
+      } else {
+        envContent += `\nGROQ_API_KEY="${groqKey}"`;
+      }
+
+      if (envContent.includes('GOOGLE_API_KEY')) {
+        envContent = envContent.replace(/GOOGLE_API_KEY\s*=\s*["']?[^"'\r\n]*["']?/, `GOOGLE_API_KEY="${geminiKey}"`);
+      } else {
+        envContent += `\nGOOGLE_API_KEY="${geminiKey}"`;
+      }
+
+      fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+      console.log("[*] API keys auto-synced from Store to .env on startup.");
+    }
+  } catch (e) {
+    console.error("Failed to auto-sync keys to .env file:", e);
+  }
+}
+
 app.whenReady().then(() => {
+  syncStoreToEnv();
   createWindow();
   createTray();
   startBackend();
