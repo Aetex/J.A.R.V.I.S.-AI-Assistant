@@ -18,7 +18,7 @@ A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. Th
 
 > *"Give me a few hours. I'll have something better figured out." — Tony Stark*
 
-This project supports two high-performance AI engines. You can use either (or both!):
+This project supports cloud and local AI engines. You can use Groq, Gemini, or LM Studio.
 
 ### Option A: Groq API
 1. Visit the [Groq Cloud Console](https://console.groq.com/keys).
@@ -28,7 +28,18 @@ This project supports two high-performance AI engines. You can use either (or bo
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create a free API Key. This provides a massive context window and is optimized for the free tier.
 
-*Note: If both keys are provided, JARVIS will prioritize Gemini.*
+### Option C: LM Studio (Local)
+1. Install and open [LM Studio](https://lmstudio.ai/).
+2. Download and load a chat/instruct model.
+3. Start LM Studio's local server.
+4. In `.env`, set:
+   ```env
+   LM_STUDIO_ENABLED=true
+   LM_STUDIO_URL="http://127.0.0.1:1234/v1/chat/completions"
+   LM_STUDIO_MODEL="local-model"
+   ```
+
+*Note: If `LM_STUDIO_ENABLED=true`, JARVIS will use LM Studio first. Otherwise, Gemini is prioritized over Groq when both cloud keys are provided.*
 
 ---
 
@@ -66,8 +77,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    - Double-click the `install_windows.bat` file.
    - Wait for it to say "INSTALLATION COMPLETE!"
 3. **Configure API**:
-   - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your preferred key(s):
+   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 4. **Run**:
@@ -91,8 +101,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    sh install_mac.sh
    ```
 3. **Configure API**:
-   - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your preferred key(s):
+   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 4. **Run**:
@@ -114,8 +123,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    sh install_linux.sh
    ```
 3. **Configure API**:
-   - Rename `.env.example` to `.env`.
-   - Open `.env` and paste your preferred key(s):
+   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
      - `GROQ_API_KEY="your_key_here"`
      - `GOOGLE_API_KEY="your_key_here"`
 4. **Run**:

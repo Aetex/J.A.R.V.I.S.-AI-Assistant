@@ -244,13 +244,25 @@ cd ..
 echo "[OK] UI components installed."
 echo ""
 
+echo "[*] Step 5: Setting up environment configuration..."
+if [ ! -f ".env" ]; then
+    if [ -f ".env.example" ]; then
+        cp .env.example .env
+        echo "[OK] Auto-created .env configuration file from .env.example."
+    else
+        echo "[WARN] .env.example file not found. Could not auto-create .env file."
+    fi
+else
+    echo "[OK] .env configuration file already exists."
+fi
+echo ""
+
 echo "==================================================="
 echo "  INSTALLATION COMPLETE!"
 echo "==================================================="
 echo ""
 echo "Please complete the final step manually:"
-echo "1. Rename .env.example to .env"
-echo "2. Open it and paste your API key inside."
+echo "1. Open .env and paste your API key inside."
 echo ""
 echo "Once done, you can launch the system using:"
 echo "./launch_jarvis.sh"
