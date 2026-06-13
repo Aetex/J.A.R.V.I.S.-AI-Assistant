@@ -21,4 +21,4 @@ sse_starlette
 lxml
 primp
 requests
-google-generativeai
+google-genai
