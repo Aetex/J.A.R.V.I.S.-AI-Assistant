@@ -177,10 +177,10 @@ echo ===================================================
 echo   INSTALLATION COMPLETE!
 echo ===================================================
 echo.
-echo Please complete the final step manually:
-echo 1. Open .env and paste your API key inside.
-echo.
-echo Once done, you can launch the system using:
+echo You can launch the system using:
 echo launch_jarvis.bat
+echo.
+echo Once the UI opens, you can paste and configure your API keys
+echo directly from the settings menu.
 echo.
 pause

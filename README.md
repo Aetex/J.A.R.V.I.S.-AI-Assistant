@@ -76,12 +76,9 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 2. **Run the Installer**:
    - Double-click the `install_windows.bat` file.
    - Wait for it to say "INSTALLATION COMPLETE!"
-3. **Configure API**:
-   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
-     - `GROQ_API_KEY="your_key_here"`
-     - `GOOGLE_API_KEY="your_key_here"`
-4. **Run**:
+3. **Run & Configure**:
    - Double-click `launch_jarvis.bat`.
+   - Once the HUD opens, configure your API keys (Groq or Gemini) directly from the settings menu.
 </details>
 
 <details>
@@ -100,14 +97,11 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    ```bash
    sh install_mac.sh
    ```
-3. **Configure API**:
-   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
-     - `GROQ_API_KEY="your_key_here"`
-     - `GOOGLE_API_KEY="your_key_here"`
-4. **Run**:
+3. **Run & Configure**:
    ```bash
    sh launch_jarvis.sh
    ```
+   - Once the HUD opens, configure your API keys (Groq or Gemini) directly from the settings menu.
 </details>
 
 <details>
@@ -122,14 +116,11 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
    ```bash
    sh install_linux.sh
    ```
-3. **Configure API**:
-   - Open `.env` (automatically created by the installer) and paste your preferred key(s):
-     - `GROQ_API_KEY="your_key_here"`
-     - `GOOGLE_API_KEY="your_key_here"`
-4. **Run**:
+3. **Run & Configure**:
    ```bash
    sh launch_jarvis.sh
    ```
+   - Once the HUD opens, configure your API keys (Groq or Gemini) directly from the settings menu.
 </details>
 
 ---
@@ -150,7 +141,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 > *"I'm going to need a little time to work on that." — Tony Stark*
 
 - **Microphone not detected**: Ensure your default input device is set correctly in OS settings.
-- **Backend Error**: Verify your `.env` file contains the correct `GROQ_API_KEY`.
+- **Backend Error**: Verify that you have configured your API keys inside the HUD's settings panel.
 - **UI not loading**: Ensure you ran `npm install` inside the `ui` folder.
 
 ---
