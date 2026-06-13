@@ -28,7 +28,10 @@ This project supports cloud and local AI engines. You can use Groq, Gemini, or L
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create a free API Key. This provides a massive context window and is optimized for the free tier.
 
-### Option C: LM Studio (Local)
+### Option C: LM Studio (Local / Highly Experimental — Not Recommended)
+
+> **Warning:** This option is highly experimental, not recommended for daily use, and is turned off (`false`) by default.
+
 1. Install and open [LM Studio](https://lmstudio.ai/).
 2. Download and load a chat/instruct model.
 3. Start LM Studio's local server.
