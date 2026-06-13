@@ -2,8 +2,14 @@ import asyncio
 import os
 import tempfile
 import pygame
-import soundfile as sf
-from kokoro_onnx import KokoroOnnx
+
+try:
+    import soundfile as sf
+    from kokoro_onnx import KokoroOnnx
+    KOKORO_AVAILABLE = True
+except ImportError as _kokoro_err:
+    print(f"[WARN] Kokoro TTS not available ({_kokoro_err}). Speech output will be disabled.")
+    KOKORO_AVAILABLE = False
 
 class JARVISSpeech:
     def __init__(self):
@@ -17,6 +23,8 @@ class JARVISSpeech:
 
     def init_kokoro(self):
         """Lazy initialization of Kokoro ONNX model."""
+        if not KOKORO_AVAILABLE:
+            return
         if self.kokoro is None:
             if os.path.exists(self.model_path) and os.path.exists(self.voices_path):
                 try:
@@ -43,9 +51,13 @@ class JARVISSpeech:
         if not clean_text.strip():
             return
 
+        if not KOKORO_AVAILABLE:
+            print(f"[WARN] Kokoro TTS unavailable — skipping speech for: {clean_text[:60]}...")
+            return
+
         self.init_kokoro()
         if self.kokoro is None:
-            print("[ERROR] Kokoro TTS not ready. Model files may be missing.")
+            print("[WARN] Kokoro TTS not ready. Model files may be missing — skipping speech.")
             return
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
