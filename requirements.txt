@@ -6,7 +6,9 @@ groq
 psutil
 pycaw
 comtypes
-edge-tts
+kokoro-onnx
+onnxruntime
+soundfile
 pygame
 duckduckgo-search
 SpeechRecognition

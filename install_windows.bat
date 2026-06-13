@@ -160,7 +160,33 @@ cd ..
 echo [OK] UI components installed.
 echo.
 
-echo [*] Step 5: Setting up environment configuration...
+echo [*] Step 5: Downloading Kokoro TTS Models...
+if not exist "voice" mkdir voice
+
+if not exist "voice\kokoro-v1.0.onnx" (
+    call :run_spinner "Downloading kokoro-v1.0.onnx (this may take a moment)" "powershell -Command \"Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx' -OutFile 'voice\kokoro-v1.0.onnx'\""
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to download kokoro-v1.0.onnx
+        pause
+        exit /b 1
+    )
+) else (
+    echo [OK] kokoro-v1.0.onnx already exists.
+)
+
+if not exist "voice\voices-v1.0.bin" (
+    call :run_spinner "Downloading voices-v1.0.bin" "powershell -Command \"Invoke-WebRequest -Uri 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin' -OutFile 'voice\voices-v1.0.bin'\""
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to download voices-v1.0.bin
+        pause
+        exit /b 1
+    )
+) else (
+    echo [OK] voices-v1.0.bin already exists.
+)
+echo.
+
+echo [*] Step 6: Setting up environment configuration...
 if not exist ".env" (
     if exist ".env.example" (
         copy .env.example .env > nul

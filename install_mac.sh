@@ -162,7 +162,48 @@ cd ..
 echo "[OK] UI components installed."
 echo ""
 
-echo "[*] Step 5: Setting up environment configuration..."
+echo "[*] Step 5: Downloading Kokoro TTS Models..."
+mkdir -p voice
+if [ ! -f "voice/kokoro-v1.0.onnx" ]; then
+    if command_exists curl; then
+        run_with_spinner "Downloading kokoro-v1.0.onnx (this may take a moment)" curl -L -o "voice/kokoro-v1.0.onnx" "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx" || {
+            echo "[ERROR] Failed to download kokoro-v1.0.onnx"
+            exit 1
+        }
+    elif command_exists wget; then
+        run_with_spinner "Downloading kokoro-v1.0.onnx (this may take a moment)" wget -O "voice/kokoro-v1.0.onnx" "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx" || {
+            echo "[ERROR] Failed to download kokoro-v1.0.onnx"
+            exit 1
+        }
+    else
+        echo "[ERROR] Neither curl nor wget is installed. Please download the ONNX model manually to voice/kokoro-v1.0.onnx"
+        exit 1
+    fi
+else
+    echo "[OK] kokoro-v1.0.onnx already exists."
+fi
+
+if [ ! -f "voice/voices-v1.0.bin" ]; then
+    if command_exists curl; then
+        run_with_spinner "Downloading voices-v1.0.bin" curl -L -o "voice/voices-v1.0.bin" "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin" || {
+            echo "[ERROR] Failed to download voices-v1.0.bin"
+            exit 1
+        }
+    elif command_exists wget; then
+        run_with_spinner "Downloading voices-v1.0.bin" wget -O "voice/voices-v1.0.bin" "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin" || {
+            echo "[ERROR] Failed to download voices-v1.0.bin"
+            exit 1
+        }
+    else
+        echo "[ERROR] Neither curl nor wget is installed. Please download the voices binary manually to voice/voices-v1.0.bin"
+        exit 1
+    fi
+else
+    echo "[OK] voices-v1.0.bin already exists."
+fi
+echo ""
+
+echo "[*] Step 6: Setting up environment configuration..."
 if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
         cp .env.example .env

@@ -12,5 +12,6 @@ user_profile.json
 memory.json
 *.wav
 *.mp3
-.vscode/
 .idea/
+jarvis-web/
+voice/
