@@ -1,4 +1,7 @@
-# J.A.R.V.I.S. | The Holographic AI Assistant
+# J.A.R.V.I.S. | The Holographic AI Assistant By AeteX
+
+> [!IMPORTANT]
+> **Original project by AeteX.** Forks and modifications are welcome. Please keep original credit when sharing or modifying this project.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
