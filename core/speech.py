@@ -5,7 +5,7 @@ import pygame
 
 try:
     import soundfile as sf
-    from kokoro_onnx import KokoroOnnx
+    from kokoro_onnx import Kokoro as KokoroOnnx
     KOKORO_AVAILABLE = True
 except ImportError as _kokoro_err:
     print(f"[WARN] Kokoro TTS not available ({_kokoro_err}). Speech output will be disabled.")
@@ -19,7 +19,7 @@ class JARVISSpeech:
         self.model_path = os.path.join(self.base_dir, "voice", "kokoro-v1.0.onnx")
         self.voices_path = os.path.join(self.base_dir, "voice", "voices-v1.0.bin")
         self.kokoro = None
-        self.voice = "us_adam"
+        self.voice = "am_adam"
 
     def init_kokoro(self):
         """Lazy initialization of Kokoro ONNX model."""
