@@ -72,8 +72,8 @@ function createWindow() {
     height: 800,
     frame: false,
     transparent: true,
-    alwaysOnTop: true,
-    skipTaskbar: true, // Hide from taskbar
+    alwaysOnTop: false,
+    skipTaskbar: false, // Show in taskbar
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

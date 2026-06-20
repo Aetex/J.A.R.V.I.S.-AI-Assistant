@@ -52,14 +52,8 @@ body::before {
     left: 0;
     z-index: 10;
     pointer-events: none;
-    box-shadow: 0 0 10px var(--glow-color);
-    animation: scan 4s linear infinite;
-}
-
-@keyframes scan {
-    0% { top: -5%; opacity: 0; }
-    50% { opacity: 1; }
-    100% { top: 105%; opacity: 0; }
+    box-shadow: 0 0 10px var(--glow-color), 0 0 20px rgba(0, 246, 255, 0.4);
+    animation: scanlineFade 3s linear infinite;
 }
 
 .container {
@@ -81,11 +75,39 @@ body::before {
     border: 2px solid transparent;
     pointer-events: none;
     z-index: 5;
+    transition: all 0.3s ease;
 }
-.top-left { top: 20px; left: 20px; border-top-color: var(--glow-color); border-left-color: var(--glow-color); }
-.top-right { top: 20px; right: 20px; border-top-color: var(--glow-color); border-right-color: var(--glow-color); }
-.bottom-left { bottom: 20px; left: 20px; border-bottom-color: var(--glow-color); border-left-color: var(--glow-color); }
-.bottom-right { bottom: 20px; right: 20px; border-bottom-color: var(--glow-color); border-right-color: var(--glow-color); }
+.hud-corner:hover {
+    box-shadow: 0 0 20px rgba(0, 246, 255, 0.5);
+}
+.top-left { 
+    top: 20px; 
+    left: 20px; 
+    border-top-color: var(--glow-color); 
+    border-left-color: var(--glow-color);
+    animation: slideInLeft 1s ease-out;
+}
+.top-right { 
+    top: 20px; 
+    right: 20px; 
+    border-top-color: var(--glow-color); 
+    border-right-color: var(--glow-color);
+    animation: slideInRight 1s ease-out;
+}
+.bottom-left { 
+    bottom: 20px; 
+    left: 20px; 
+    border-bottom-color: var(--glow-color); 
+    border-left-color: var(--glow-color);
+    animation: slideInLeft 1.2s ease-out;
+}
+.bottom-right { 
+    bottom: 20px; 
+    right: 20px; 
+    border-bottom-color: var(--glow-color); 
+    border-right-color: var(--glow-color);
+    animation: slideInRight 1.2s ease-out;
+}
 
 /* Core */
 .core-container {
@@ -103,11 +125,25 @@ body::before {
     border: 4px solid var(--glow-color);
     border-radius: 50%;
     box-shadow: 0 0 20px var(--glow-color), inset 0 0 20px var(--glow-color);
-    animation: rotate 10s linear infinite, pulse 3s ease-in-out infinite;
+    animation: rotate 10s linear infinite, arcReactorPulse 3s ease-in-out infinite, quantumFlicker 4s ease-in-out infinite;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.core:hover {
+    filter: brightness(1.2);
+}
+
+/* Core State Classes */
+.core.idle {
+    animation: rotate 10s linear infinite, arcReactorPulse 3s ease-in-out infinite, quantumFlicker 4s ease-in-out infinite;
+}
+
+.core.responding {
+    animation: rotate 8s linear infinite, arcReactorResponding 1.5s ease-in-out infinite, rapidDataFlow 2s ease-in-out infinite;
 }
 
 .rotating-ring {
@@ -127,7 +163,12 @@ body::before {
     background: var(--glow-color);
     border-radius: 50%;
     box-shadow: 0 0 40px var(--glow-color);
-    animation: glow 2s ease-in-out infinite;
+    animation: innerCoreIdle 3s ease-in-out infinite, quantumFlicker 4s ease-in-out infinite;
+    transition: animation 0.3s ease;
+}
+
+.inner-core.responding {
+    animation: holographicGlow 1.2s ease-in-out infinite, rapidDataFlow 1.5s ease-in-out infinite;
 }
 
 /* Panels */
@@ -139,6 +180,12 @@ body::before {
     padding: 15px;
     display: flex;
     flex-direction: column;
+    animation: slideInLeft 0.8s ease-out, techPulseBorder 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+.panel:nth-child(3) {
+    animation: slideInRight 0.8s ease-out, techPulseBorder 3s ease-in-out infinite;
 }
 
 .panel-header {
@@ -156,9 +203,29 @@ body::before {
     font-size: 0.9rem;
 }
 
-.msg { margin-bottom: 10px; line-height: 1.4; }
-.msg-user { color: #fff; opacity: 0.7; }
-.msg-jarvis { color: var(--glow-color); text-shadow: 0 0 5px var(--glow-color); }
+.msg { 
+    margin-bottom: 10px; 
+    line-height: 1.4;
+    animation: messageAppear 0.4s ease-out;
+}
+.msg-user { 
+    color: #fff; 
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+.msg-user:hover {
+    opacity: 1;
+    transform: translateX(5px);
+}
+.msg-jarvis { 
+    color: var(--glow-color); 
+    text-shadow: 0 0 5px var(--glow-color);
+    animation: quantumFlicker 2s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+.msg-jarvis:hover {
+    text-shadow: 0 0 10px var(--glow-color), 0 0 20px rgba(0, 246, 255, 0.5);
+}
 
 .input-area {
     grid-column: 2;
@@ -176,12 +243,271 @@ input {
     border-radius: 5px;
     font-family: 'Orbitron', sans-serif;
     outline: none;
+    transition: all 0.3s ease;
+    animation: slideInLeft 1s ease-out;
+}
+
+input:focus {
+    box-shadow: 0 0 15px var(--glow-color), inset 0 0 10px rgba(0, 246, 255, 0.1);
+    border-color: rgba(0, 246, 255, 0.8);
+}
+
+input::placeholder {
+    color: rgba(0, 246, 255, 0.5);
+}
+
+/* Button Glow Animation */
+@keyframes buttonGlow {
+    0% {
+        box-shadow: 0 0 0px rgba(0, 246, 255, 0);
+    }
+    50% {
+        box-shadow: 0 0 8px rgba(0, 246, 255, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 0px rgba(0, 246, 255, 0);
+    }
+}
+
+/* Mini and Keys Button Styles */
+#mini-toggle, #keys-btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    transform-origin: right center;
+}
+
+#mini-toggle:hover, #keys-btn:hover {
+    background: rgba(0, 246, 255, 0.15) !important;
+    border-color: rgba(0, 246, 255, 0.9) !important;
+    color: rgba(0, 246, 255, 1) !important;
+    box-shadow: 0 0 12px rgba(0, 246, 255, 0.5), inset 0 0 8px rgba(0, 246, 255, 0.1);
+    transform: scale(1.05);
+    filter: brightness(1.15);
+}
+
+#mini-toggle:active, #keys-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 6px rgba(0, 246, 255, 0.3), inset 0 0 4px rgba(0, 246, 255, 0.1);
+}
+
+/* Exit Button Hover */
+#exit-btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: right center;
+}
+
+#exit-btn:hover {
+    background: rgba(255, 68, 68, 0.15) !important;
+    border-color: rgba(255, 68, 68, 0.9) !important;
+    color: rgba(255, 68, 68, 1) !important;
+    box-shadow: 0 0 12px rgba(255, 68, 68, 0.5), inset 0 0 8px rgba(255, 68, 68, 0.1);
+    transform: scale(1.05);
+    filter: brightness(1.15);
+}
+
+#exit-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.3), inset 0 0 4px rgba(255, 68, 68, 0.1);
 }
 
 /* Animations */
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 20px var(--glow-color); } 50% { box-shadow: 0 0 50px var(--glow-color); } }
+
+/* Iron Man Holographic Glow */
+@keyframes holographicGlow {
+    0% { 
+        box-shadow: 0 0 20px var(--glow-color), 
+                    0 0 40px rgba(0, 246, 255, 0.5),
+                    inset 0 0 20px rgba(0, 246, 255, 0.2);
+    }
+    50% { 
+        box-shadow: 0 0 30px var(--glow-color), 
+                    0 0 60px rgba(0, 246, 255, 0.6),
+                    inset 0 0 30px rgba(0, 246, 255, 0.3);
+    }
+    100% { 
+        box-shadow: 0 0 20px var(--glow-color), 
+                    0 0 40px rgba(0, 246, 255, 0.5),
+                    inset 0 0 20px rgba(0, 246, 255, 0.2);
+    }
+}
+
+/* Quantum Flicker */
+@keyframes quantumFlicker {
+    0% { opacity: 1; }
+    5% { opacity: 0.95; }
+    10% { opacity: 1; }
+    15% { opacity: 0.98; }
+    100% { opacity: 1; }
+}
+
+/* Arc Reactor Pulse - Silent/Idle State */
+@keyframes arcReactorPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 20px var(--glow-color);
+    }
+    25% { 
+        transform: scale(1.08);
+        box-shadow: 0 0 40px var(--glow-color);
+    }
+    50% { 
+        transform: scale(1.12);
+        box-shadow: 0 0 60px var(--glow-color), 0 0 100px rgba(0, 246, 255, 0.4);
+    }
+    75% { 
+        transform: scale(1.08);
+        box-shadow: 0 0 40px var(--glow-color);
+    }
+}
+
+/* Arc Reactor Responding - Active Thinking State */
+@keyframes arcReactorResponding {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 30px var(--glow-color), 
+                    0 0 60px rgba(0, 246, 255, 0.6),
+                    inset 0 0 20px rgba(0, 246, 255, 0.3);
+    }
+    25% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 45px var(--glow-color), 
+                    0 0 90px rgba(0, 246, 255, 0.7),
+                    inset 0 0 30px rgba(0, 246, 255, 0.4);
+    }
+    50% { 
+        transform: scale(1.15);
+        box-shadow: 0 0 60px var(--glow-color), 
+                    0 0 120px rgba(0, 246, 255, 0.8),
+                    inset 0 0 40px rgba(0, 246, 255, 0.5);
+    }
+    75% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 45px var(--glow-color), 
+                    0 0 90px rgba(0, 246, 255, 0.7),
+                    inset 0 0 30px rgba(0, 246, 255, 0.4);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: 0 0 30px var(--glow-color), 
+                    0 0 60px rgba(0, 246, 255, 0.6),
+                    inset 0 0 20px rgba(0, 246, 255, 0.3);
+    }
+}
+
+/* Rapid Data Processing - When AI is Actively Responding */
+@keyframes rapidDataFlow {
+    0% { 
+        opacity: 0.8;
+        transform: scaleY(1);
+    }
+    25% { 
+        opacity: 1;
+        transform: scaleY(1.2);
+    }
+    50% { 
+        opacity: 0.9;
+        transform: scaleY(1.1);
+    }
+    75% { 
+        opacity: 1;
+        transform: scaleY(1.15);
+    }
+    100% { 
+        opacity: 0.8;
+        transform: scaleY(1);
+    }
+}
+
+/* Inner Core Idle - Subtle Breathing */
+@keyframes innerCoreIdle {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 20px var(--glow-color);
+    }
+    50% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 30px var(--glow-color), 0 0 50px rgba(0, 246, 255, 0.3);
+    }
+}
+
+/* Data Stream */
+@keyframes dataStream {
+    0% { 
+        transform: scaleY(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scaleY(1.1);
+        opacity: 0.8;
+    }
+    100% { 
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+/* Panel Slide In */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Tech Pulse Border */
+@keyframes techPulseBorder {
+    0% {
+        border-color: rgba(0, 246, 255, 0.3);
+        box-shadow: inset 0 0 10px rgba(0, 246, 255, 0.1);
+    }
+    50% {
+        border-color: rgba(0, 246, 255, 0.6);
+        box-shadow: inset 0 0 20px rgba(0, 246, 255, 0.2);
+    }
+    100% {
+        border-color: rgba(0, 246, 255, 0.3);
+        box-shadow: inset 0 0 10px rgba(0, 246, 255, 0.1);
+    }
+}
+
+/* Scanline Fade */
+@keyframes scanlineFade {
+    0% { opacity: 0; top: -5%; }
+    10% { opacity: 0.5; }
+    50% { opacity: 1; }
+    90% { opacity: 0.5; }
+    100% { opacity: 0; top: 105%; }
+}
+
+/* Message Appear */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* Mini Mode */
 .mini-core {
@@ -190,10 +516,17 @@ input {
     border: 2px solid var(--glow-color);
     border-radius: 50%;
     box-shadow: 0 0 10px var(--glow-color);
-    animation: rotate 10s linear infinite, pulse 2s ease-in-out infinite;
+    animation: rotate 10s linear infinite, arcReactorPulse 2s ease-in-out infinite;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.mini-core:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px var(--glow-color), 0 0 40px rgba(0, 246, 255, 0.5);
 }
 
 body.mini-mode .scanline,

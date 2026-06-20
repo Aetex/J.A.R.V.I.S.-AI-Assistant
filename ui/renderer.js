@@ -4,6 +4,7 @@ const input = document.getElementById('user-input');
 const chatLog = document.getElementById('chat-log');
 const micBtn = document.getElementById('mic-btn');
 const core = document.getElementById('jarvis-core');
+const innerCore = core.querySelector('.inner-core');
 
 const cpuBar = document.getElementById('cpu-bar');
 const memBar = document.getElementById('mem-bar');
@@ -14,6 +15,28 @@ const volVal = document.getElementById('vol-val');
 
 const BACKEND_URL = 'http://127.0.0.1:8000';
 
+// State tracking
+let isResponding = false;
+
+function setCoreListen(responding) {
+    isResponding = responding;
+    if (responding) {
+        core.classList.remove('idle');
+        core.classList.add('responding');
+        if (innerCore) {
+            innerCore.classList.remove('idle');
+            innerCore.classList.add('responding');
+        }
+    } else {
+        core.classList.remove('responding');
+        core.classList.add('idle');
+        if (innerCore) {
+            innerCore.classList.remove('responding');
+            innerCore.classList.add('idle');
+        }
+    }
+}
+
 function addMessage(text, sender, isHTML = false) {
     const div = document.createElement('div');
     div.className = `msg msg-${sender}`;
@@ -22,7 +45,20 @@ function addMessage(text, sender, isHTML = false) {
     } else {
         div.innerText = sender === 'jarvis' ? `> ${text}` : `[USER]: ${text}`;
     }
+    
+    // Smooth scroll animation
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(10px)';
+    
     chatLog.appendChild(div);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        div.style.transition = 'all 0.4s ease';
+        div.style.opacity = '1';
+        div.style.transform = 'translateY(0)';
+    });
+    
     chatLog.scrollTop = chatLog.scrollHeight;
 }
 
@@ -59,6 +95,7 @@ async function sendMessage(msg) {
     
     await stopSpeech();
     addMessage(msg, 'user');
+    setCoreListen(true);
     
     try {
         const res = await fetch(`${BACKEND_URL}/chat`, {
@@ -70,11 +107,13 @@ async function sendMessage(msg) {
         if (!res.ok) {
             const errorData = await res.json();
             addMessage(`Sir, my processors are reporting an error: ${errorData.detail || 'Internal Error'}`, 'jarvis');
+            setCoreListen(false);
             return;
         }
 
         const data = await res.json();
         handleJarvisResponse(data);
+        setCoreListen(false);
         
     } catch (error) {
         addMessage("I'm having trouble connecting to my core processors, sir. Please ensure the backend is running. <span id='open-keys-err' style='color: #00f6ff; text-decoration: underline; cursor: pointer; font-weight: bold;'>Configure API Keys</span>", 'jarvis', true);
@@ -83,6 +122,7 @@ async function sendMessage(msg) {
             errLink.addEventListener('click', openSetupOverlay);
         }
         console.error(error);
+        setCoreListen(false);
     }
 }
 
@@ -91,14 +131,17 @@ async function updateStatus() {
         const res = await fetch(`${BACKEND_URL}/status`);
         const data = await res.json();
         
-        cpuBar.style.width = `${data.cpu}%`;
-        cpuVal.innerText = `${Math.round(data.cpu)}%`;
+        // Smooth bar transitions with animation
+        const updateBar = (bar, value, val, text) => {
+            bar.style.transition = 'width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            bar.style.width = `${value}%`;
+            val.style.transition = 'all 0.3s ease';
+            val.innerText = text;
+        };
         
-        memBar.style.width = `${data.memory}%`;
-        memVal.innerText = `${Math.round(data.memory)}%`;
-        
-        volBar.style.width = `${data.volume}%`;
-        volVal.innerText = `${data.volume}%`;
+        updateBar(cpuBar, data.cpu, cpuVal, `${Math.round(data.cpu)}%`);
+        updateBar(memBar, data.memory, memVal, `${Math.round(data.memory)}%`);
+        updateBar(volBar, data.volume, volVal, `${data.volume}%`);
     } catch (e) {
         // Silently fail status updates if backend is down
     }
@@ -115,10 +158,27 @@ input.addEventListener('keypress', async (e) => {
 
 core.addEventListener('click', async () => {
     await stopSpeech();
+    // Add click animation
+    core.style.animation = 'none';
+    setTimeout(() => {
+        core.style.animation = '';
+    }, 10);
+});
+
+// Hover effects on core
+core.addEventListener('mouseenter', () => {
+    core.style.filter = 'brightness(1.3)';
+});
+
+core.addEventListener('mouseleave', () => {
+    core.style.filter = 'brightness(1)';
 });
 
 micBtn.addEventListener('click', async () => {
     micBtn.style.color = "red";
+    micBtn.style.animation = 'none';
+    micBtn.style.transition = 'all 0.2s ease';
+    micBtn.style.transform = 'scale(1.2)';
     micBtn.innerText = "🔴";
     
     try {
@@ -131,8 +191,19 @@ micBtn.addEventListener('click', async () => {
         addMessage("Sir, I'm unable to access the microphone array.", 'jarvis');
     } finally {
         micBtn.style.color = "#00f6ff";
+        micBtn.style.transform = 'scale(1)';
         micBtn.innerText = "🎙️";
     }
+});
+
+// Mic button hover effect
+micBtn.addEventListener('mouseenter', () => {
+    micBtn.style.transition = 'all 0.2s ease';
+    micBtn.style.filter = 'drop-shadow(0 0 8px #00f6ff)';
+});
+
+micBtn.addEventListener('mouseleave', () => {
+    micBtn.style.filter = 'drop-shadow(0 0 0px #00f6ff)';
 });
 
 // View Toggling
@@ -145,14 +216,37 @@ let isMini = false;
 
 exitBtn.addEventListener('click', async () => {
     addMessage("Shutting down all systems, sir.", 'jarvis');
-    try {
-        // 1. Tell backend to shut down
-        fetch(`${BACKEND_URL}/shutdown`, { method: 'POST' });
-        // 2. Close UI immediately
-        ipcRenderer.send('quit-app');
-    } catch (e) {
-        ipcRenderer.send('quit-app'); // Force close UI anyway
+    
+    // Shutdown animation
+    const container = document.getElementById('full-view');
+    if (container) {
+        container.style.transition = 'all 0.8s ease';
+        container.style.opacity = '0';
+        container.style.transform = 'scale(0.95)';
     }
+    
+    setTimeout(() => {
+        try {
+            // 1. Tell backend to shut down
+            fetch(`${BACKEND_URL}/shutdown`, { method: 'POST' });
+            // 2. Close UI immediately
+            ipcRenderer.send('quit-app');
+        } catch (e) {
+            ipcRenderer.send('quit-app'); // Force close UI anyway
+        }
+    }, 600);
+});
+
+// Exit button hover effect
+exitBtn.addEventListener('mouseenter', () => {
+    exitBtn.style.transition = 'all 0.2s ease';
+    exitBtn.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+    exitBtn.style.transform = 'scale(1.05)';
+});
+
+exitBtn.addEventListener('mouseleave', () => {
+    exitBtn.style.boxShadow = 'none';
+    exitBtn.style.transform = 'scale(1)';
 });
 
 function toggleView() {
@@ -178,19 +272,21 @@ const eventSource = new EventSource(`${BACKEND_URL}/events`);
 eventSource.addEventListener('wakeword', (e) => {
     const data = JSON.parse(e.data);
     console.log("Wake word detected!");
-    // Visual feedback: Make the core pulse faster or change color
-    core.style.boxShadow = "0 0 50px #ff0000"; 
-    setTimeout(() => { core.style.boxShadow = ""; }, 2000);
+    setCoreListen(true);
+    setTimeout(() => { setCoreListen(false); }, 1000);
 });
 
 eventSource.addEventListener('user_speech', (e) => {
     const data = JSON.parse(e.data);
     addMessage(data.text, 'user');
+    setCoreListen(true);
 });
 
 eventSource.addEventListener('jarvis_response', (e) => {
     const data = JSON.parse(e.data);
+    setCoreListen(true);
     handleJarvisResponse(data);
+    setCoreListen(false);
 });
 
 // Click-through handling
@@ -257,3 +353,4 @@ document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
 checkSetup();
 setInterval(updateStatus, 2000);
 updateStatus();
+setCoreListen(false); // Start in idle state
