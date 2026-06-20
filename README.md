@@ -7,7 +7,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Electron](https://img.shields.io/badge/platform-Electron-blueviolet.svg)](https://www.electronjs.org/)
 
-**Current version:** v0.3.5
+**Current version:** v0.4
 
 > **Development warning:** JARVIS v0.3.5 is still under active development. Expect some rough edges and possible bugs while the systems are being upgraded.
 
