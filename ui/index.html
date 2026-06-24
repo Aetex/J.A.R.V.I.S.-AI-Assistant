@@ -15,10 +15,17 @@
         <div class="panel" style="grid-column: 1; grid-row: 1 / 3;">
             <div class="panel-header">
                 SYSTEM STATUS
-                <button id="exit-btn" style="float: right; background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">EXIT</button>
-                <button id="mini-toggle" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">MINI</button>
-                <button id="update-btn" style="float: right; background: none; border: 1px solid #00ff00; color: #00ff00; cursor: pointer; font-size: 0.6rem; padding: 2px 5px; margin-left: 5px;">UPDATE</button>
-                <button id="keys-btn" style="float: right; background: none; border: 1px solid #00f6ff; color: #00f6ff; cursor: pointer; font-size: 0.6rem; padding: 2px 5px;">KEYS</button>
+                <div style="position: absolute; top: 10px; right: 15px; display: flex; gap: 5px; align-items: center;">
+                    <button id="exit-btn" class="header-btn exit-btn">EXIT</button>
+                    <button id="mini-toggle" class="header-btn mini-btn">MINI</button>
+                    <div class="menu-toggle-wrapper">
+                        <button id="menu-toggle-btn" class="header-btn menu-toggle-btn">MENU</button>
+                        <div id="action-menu" class="action-menu hidden">
+                            <button id="update-btn" class="menu-item update-item">Update System</button>
+                            <button id="keys-btn" class="menu-item keys-item">Configure Keys</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="system-stats" style="flex-grow: 1; display: flex; flex-direction: column; height: calc(100% - 30px);">
                 <div class="stat-item"><span>CPU LOAD</span><span id="cpu-val" style="margin-left: 10px;">0%</span></div>

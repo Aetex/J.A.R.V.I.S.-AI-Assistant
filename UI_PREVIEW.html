@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <title>J.A.R.V.I.S. UI Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a141e;
+            color: #00f6ff;
+            font-family: 'Roboto', sans-serif;
+            padding: 40px;
+        }
+        
+        .preview-section {
+            margin-bottom: 60px;
+        }
+        
+        .preview-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            color: #00ff00;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        
+        .preview-subtitle {
+            font-size: 0.9rem;
+            color: #a0d8ef;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .ui-mockup {
+            background: rgba(10, 20, 30, 0.7);
+            border: 1px solid rgba(0, 246, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: relative;
+        }
+        
+        .demo-btn {
+            background: none;
+            border: 1px solid #00f6ff;
+            color: #00f6ff;
+            cursor: pointer;
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 246, 255, 0.1);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .demo-btn:hover::before {
+            left: 0;
+        }
+        
+        .demo-btn:hover {
+            box-shadow: 0 0 12px rgba(0, 246, 255, 0.6), inset 0 0 8px rgba(0, 246, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(0, 246, 255, 0.95);
+        }
+        
+        .exit-btn {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        
+        .exit-btn::before {
+            background: rgba(255, 68, 68, 0.1);
+        }
+        
+        .exit-btn:hover {
+            box-shadow: 0 0 12px rgba(255, 68, 68, 0.6), inset 0 0 8px rgba(255, 68, 68, 0.1);
+            border-color: rgba(255, 68, 68, 0.95);
+        }
+        
+        .mini-btn {
+            border-color: #00f6ff;
+            color: #00f6ff;
+        }
+        
+        .menu-btn {
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: menuGlow 2s ease-in-out infinite;
+        }
+        
+        .menu-btn::before {
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .menu-btn:hover {
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.6), inset 0 0 8px rgba(0, 255, 0, 0.1);
+            border-color: rgba(0, 255, 0, 0.95);
+        }
+        
+        .menu-btn.active {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.7), inset 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(10, 20, 30, 0.95);
+            border: 1px solid rgba(0, 246, 255, 0.3);
+            border-radius: 5px;
+            margin-top: 5px;
+            min-width: 180px;
+            box-shadow: 0 0 20px rgba(0, 246, 255, 0.3), inset 0 0 10px rgba(0, 246, 255, 0.05);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            animation: dropdownSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .menu-item {
+            background: none;
+            border: none;
+            border-bottom: 1px solid rgba(0, 246, 255, 0.1);
+            color: #00f6ff;
+            padding: 12px 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: block;
+            width: 100%;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 246, 255, 0.1), rgba(0, 246, 255, 0.2));
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .menu-item:hover::before {
+            left: 0;
+        }
+        
+        .menu-item:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 246, 255, 0.6);
+            padding-left: 20px;
+        }
+        
+        .update-item {
+            color: #00ff00;
+            border-bottom-color: rgba(0, 255, 0, 0.1);
+        }
+        
+        .update-item::before {
+            background: linear-gradient(90deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.2));
+        }
+        
+        .update-item:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+        }
+        
+        @keyframes menuGlow {
+            0% { box-shadow: 0 0 0px rgba(0, 255, 0, 0); }
+            50% { box-shadow: 0 0 8px rgba(0, 255, 0, 0.4); }
+            100% { box-shadow: 0 0 0px rgba(0, 255, 0, 0); }
+        }
+        
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scaleY(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scaleY(1);
+            }
+        }
+        
+        .feature-list {
+            background: rgba(0, 246, 255, 0.05);
+            border-left: 3px solid #00ff00;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 8px;
+            margin-left: 20px;
+            color: #a0d8ef;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            background: rgba(0, 246, 255, 0.03);
+            border: 1px solid rgba(0, 246, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .comparison-item h3 {
+            color: #00ff00;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-item p {
+            font-size: 0.85rem;
+            color: #a0d8ef;
+            line-height: 1.5;
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-section">
+        <div class="preview-title">J.A.R.V.I.S. UI REDESIGN - ANIMATION & MENU SYSTEM</div>
+        <p class="preview-subtitle">New dropdown menu with smooth animations for better organization and usability</p>
+    </div>
+    
+    <div class="preview-section">
+        <h2 class="preview-title">Interactive Preview</h2>
+        <p class="preview-subtitle">Try hovering and clicking the buttons below:</p>
+        
+        <div class="ui-mockup">
+            <div class="header-buttons">
+                <button class="demo-btn exit-btn">EXIT</button>
+                <button class="demo-btn mini-btn">MINI</button>
+                
+                <div style="position: relative; display: inline-block;">
+                    <button class="demo-btn menu-btn" onclick="toggleMenu(event)">MENU</button>
+                    <div id="demoMenu" class="dropdown-menu" style="display: none;">
+                        <button class="menu-item update-item">Update System</button>
+                        <button class="menu-item">Configure Keys</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h2 class="preview-title">Key Features</h2>
+        
+        <div class="comparison">
+            <div class="comparison-item">
+                <h3>Before</h3>
+                <p>All 4 buttons crowded in header:</p>
+                <p style="margin-top: 10px; font-style: italic;">EXIT | MINI | UPDATE | KEYS</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">Visual clutter, limited space</p>
+            </div>
+            <div class="comparison-item">
+                <h3>After</h3>
+                <p>Organized layout with collapsible menu:</p>
+                <p style="margin-top: 10px; font-style: italic;">EXIT | MINI | MENU (with dropdown)</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">Clean, organized, more space</p>
+            </div>
+        </div>
+        
+        <ul class="feature-list">
+            <li><strong>Dropdown Menu</strong> - UPDATE and KEYS hidden in collapsible MENU button</li>
+            <li><strong>Animation-Rich</strong> - Glowing menu button, smooth dropdown slide animation</li>
+            <li><strong>Color-Coded</strong> - EXIT (red), MINI (cyan), MENU (green) with distinctive styles</li>
+            <li><strong>Smooth Transitions</strong> - All buttons use cubic-bezier easing for responsive feel</li>
+            <li><strong>Hover Effects</strong> - Background fill, glow, and lift animations on hover</li>
+            <li><strong>Auto-Close</strong> - Menu closes when clicking outside or selecting an item</li>
+            <li><strong>No Emojis</strong> - Pure text-based buttons for clean appearance</li>
+            <li><strong>Active States</strong> - Visual feedback showing when menu is open</li>
+        </ul>
+    </div>
+    
+    <div class="preview-section">
+        <h2 class="preview-title">Technical Animations</h2>
+        
+        <div class="feature-list">
+            <li><code>menuButtonGlow</code> - Pulsing green glow effect on MENU button</li>
+            <li><code>menuDropdown</code> - Smooth cubic-bezier dropdown expansion animation</li>
+            <li><code>overlayFadeIn</code> - Fade and blur effect when update overlay appears</li>
+            <li><code>updateButtonPulse</code> - Alternative pulse effect for updates</li>
+            <li>Smooth background fills using <code>::before</code> pseudo-elements</li>
+            <li>Translate-Y hover effects for tactile feedback</li>
+            <li>All transitions use optimized cubic-bezier timing functions</li>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h2 class="preview-title">Files Modified</h2>
+        <ul class="feature-list">
+            <li><code>ui/index.html</code> - Updated header button layout with dropdown menu</li>
+            <li><code>ui/style.css</code> - Added 230+ lines of animations and styling</li>
+            <li><code>ui/renderer.js</code> - Added menu toggle functionality with event listeners</li>
+        </ul>
+    </div>
+    
+    <script>
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('demoMenu');
+            const btn = event.target;
+            
+            if (menu.style.display === 'none') {
+                menu.style.display = 'flex';
+                btn.classList.add('active');
+            } else {
+                menu.style.display = 'none';
+                btn.classList.remove('active');
+            }
+        }
+        
+        document.addEventListener('click', () => {
+            const menu = document.getElementById('demoMenu');
+            const btn = document.querySelector('.menu-btn');
+            if (menu.style.display === 'flex') {
+                menu.style.display = 'none';
+                btn.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
