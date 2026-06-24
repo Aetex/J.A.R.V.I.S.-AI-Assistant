@@ -349,6 +349,68 @@ document.getElementById('cancel-keys-btn').addEventListener('click', () => {
 
 document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
 
+// ── UPDATE button ──────────────────────────────────────────────────────────
+document.getElementById('update-btn').addEventListener('click', async () => {
+    const overlay = document.getElementById('update-overlay');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'flex';
+    statusText.textContent = 'Initiating system update sequence...';
+    progressBar.style.width = '10%';
+
+    const success = await ipcRenderer.invoke('perform-update');
+
+    if (!success) {
+        statusText.textContent = 'Update sequence failed. Resuming standard operations.';
+        progressBar.style.width = '0%';
+        setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+    }
+    // success path is handled by 'hide-update-overlay' IPC event below
+});
+
+document.getElementById('cancel-update-btn').addEventListener('click', () => {
+    const overlay = document.getElementById('update-overlay');
+    overlay.style.display = 'none';
+    ipcRenderer.send('cancel-update');
+});
+
+// ── Update overlay IPC events (from main.js) ───────────────────────────────
+ipcRenderer.on('show-update-overlay', (event, message) => {
+    const overlay = document.getElementById('update-overlay');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'flex';
+    if (message) statusText.textContent = message;
+    progressBar.style.width = '20%';
+});
+
+ipcRenderer.on('update-status', (event, message) => {
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    if (statusText && message) {
+        statusText.textContent = message;
+        // Update progress based on message content
+        if (message.includes('Checking')) progressBar.style.width = '30%';
+        else if (message.includes('Backup')) progressBar.style.width = '40%';
+        else if (message.includes('Git')) progressBar.style.width = '50%';
+        else if (message.includes('Synchronizing')) progressBar.style.width = '60%';
+        else if (message.includes('Dependencies')) progressBar.style.width = '70%';
+        else if (message.includes('complete')) progressBar.style.width = '100%';
+    }
+});
+
+ipcRenderer.on('update-progress', (event, progress) => {
+    const progressBar = document.getElementById('update-progress-bar');
+    if (progressBar) progressBar.style.width = `${progress}%`;
+});
+
+ipcRenderer.on('hide-update-overlay', () => {
+    const overlay = document.getElementById('update-overlay');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'none';
+    progressBar.style.width = '0%';
+});
+
 // Init
 checkSetup();
 setInterval(updateStatus, 2000);

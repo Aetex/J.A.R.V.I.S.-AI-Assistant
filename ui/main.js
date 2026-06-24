@@ -221,6 +221,123 @@ ipcMain.on('save-api-keys', (event, keys) => {
   startBackend();
 });
 
+// ── UPDATE SYSTEM IPC HANDLERS ───────────────────────────────────────────
+let updateProcess = null;
+
+ipcMain.handle('perform-update', async (event) => {
+  const baseDir = path.join(__dirname, '..');
+  const updaterScript = path.join(baseDir, 'updater.py');
+  
+  if (!fs.existsSync(updaterScript)) {
+    console.error("[!] Updater script not found:", updaterScript);
+    if (win) win.webContents.send('update-status', 'Updater script not found');
+    return false;
+  }
+
+  console.log("[*] Starting update process...");
+  
+  try {
+    // Show update overlay
+    if (win) {
+      win.webContents.send('show-update-overlay', 'Checking for updates...');
+    }
+
+    // Run the updater script
+    updateProcess = spawn('python', [updaterScript], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+
+    let updateCompleted = false;
+    let updateFailed = false;
+
+    updateProcess.stdout.on('data', (data) => {
+      const output = data.toString();
+      console.log(`[Updater]: ${output}`);
+      
+      // Parse output and send status updates
+      if (output.includes('Checking')) {
+        if (win) win.webContents.send('update-status', 'Checking for updates...');
+      } else if (output.includes('Backup')) {
+        if (win) win.webContents.send('update-status', 'Creating backup...');
+      } else if (output.includes('Git pull')) {
+        if (win) win.webContents.send('update-status', 'Fetching latest changes...');
+      } else if (output.includes('Synchronizing')) {
+        if (win) win.webContents.send('update-status', 'Synchronizing files...');
+      } else if (output.includes('dependencies')) {
+        if (win) win.webContents.send('update-status', 'Updating dependencies...');
+      } else if (output.includes('complete') || output.includes('successfully')) {
+        if (win) win.webContents.send('update-status', 'Update complete! Restarting...');
+        updateCompleted = true;
+      } else if (output.includes('failed') || output.includes('error')) {
+        updateFailed = true;
+      }
+    });
+
+    updateProcess.stderr.on('data', (data) => {
+      console.error(`[Updater Error]: ${data.toString()}`);
+      updateFailed = true;
+    });
+
+    return new Promise((resolve) => {
+      updateProcess.on('close', (code) => {
+        console.log(`[Updater] exited with code ${code}`);
+        updateProcess = null;
+        
+        if (code === 0 && updateCompleted && !updateFailed) {
+          if (win) {
+            setTimeout(() => {
+              win.webContents.send('hide-update-overlay');
+              // Restart the app
+              app.relaunch();
+              app.exit();
+            }, 2000);
+          }
+          resolve(true);
+        } else {
+          if (win) {
+            win.webContents.send('update-status', 'Update failed. Please check console for details.');
+            setTimeout(() => {
+              win.webContents.send('hide-update-overlay');
+            }, 3000);
+          }
+          resolve(false);
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error("[!] Update process error:", error);
+    if (win) {
+      win.webContents.send('update-status', 'Update failed: ' + error.message);
+      setTimeout(() => {
+        win.webContents.send('hide-update-overlay');
+      }, 3000);
+    }
+    return false;
+  }
+});
+
+ipcMain.on('cancel-update', () => {
+  if (updateProcess) {
+    console.log("[*] Cancelling update process...");
+    try {
+      if (process.platform === 'win32') {
+        spawn('taskkill', ['/pid', updateProcess.pid, '/f', '/t']);
+      } else {
+        updateProcess.kill();
+      }
+      updateProcess = null;
+    } catch (err) {
+      console.error("Failed to cancel update:", err);
+    }
+  }
+  
+  if (win) {
+    win.webContents.send('hide-update-overlay');
+  }
+});
+
 function syncStoreToEnv() {
   const groqKey = store.get('groqKey') || '';
   const geminiKey = store.get('geminiKey') || '';
