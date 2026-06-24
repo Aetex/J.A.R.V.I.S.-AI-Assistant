@@ -206,45 +206,6 @@ micBtn.addEventListener('mouseleave', () => {
     micBtn.style.filter = 'drop-shadow(0 0 0px #00f6ff)';
 });
 
-// Menu System
-const menuToggle = document.getElementById('menu-toggle');
-const menuDropdown = document.getElementById('menu-dropdown');
-let isMenuOpen = false;
-
-menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    isMenuOpen = !isMenuOpen;
-    menuDropdown.classList.toggle('active', isMenuOpen);
-    menuToggle.classList.toggle('active', isMenuOpen);
-    
-    // Add slight bounce animation
-    menuToggle.style.animation = 'none';
-    setTimeout(() => {
-        menuToggle.style.animation = '';
-    }, 10);
-});
-
-// Close menu when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.header-menu-container')) {
-        isMenuOpen = false;
-        menuDropdown.classList.remove('active');
-        menuToggle.classList.remove('active');
-    }
-});
-
-// Close menu when selecting an item
-const menuItems = document.querySelectorAll('.menu-item');
-menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-        // Smooth close animation
-        menuDropdown.style.transition = 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        setTimeout(() => {
-            menuDropdown.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        }, 200);
-    });
-});
-
 // View Toggling
 const miniToggle = document.getElementById('mini-toggle');
 const exitBtn = document.getElementById('exit-btn');
@@ -254,19 +215,14 @@ const miniCore = document.getElementById('mini-core');
 let isMini = false;
 
 exitBtn.addEventListener('click', async () => {
-    // Close menu first
-    isMenuOpen = false;
-    menuDropdown.classList.remove('active');
-    menuToggle.classList.remove('active');
-    
     addMessage("Shutting down all systems, sir.", 'jarvis');
     
     // Shutdown animation
     const container = document.getElementById('full-view');
     if (container) {
-        container.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        container.style.transition = 'all 0.8s ease';
         container.style.opacity = '0';
-        container.style.transform = 'scale(0.95) rotateX(10deg)';
+        container.style.transform = 'scale(0.95)';
     }
     
     setTimeout(() => {
@@ -281,38 +237,29 @@ exitBtn.addEventListener('click', async () => {
     }, 600);
 });
 
+// Exit button hover effect
+exitBtn.addEventListener('mouseenter', () => {
+    exitBtn.style.transition = 'all 0.2s ease';
+    exitBtn.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+    exitBtn.style.transform = 'scale(1.05)';
+});
+
+exitBtn.addEventListener('mouseleave', () => {
+    exitBtn.style.boxShadow = 'none';
+    exitBtn.style.transform = 'scale(1)';
+});
+
 function toggleView() {
-    // Close menu first
-    isMenuOpen = false;
-    menuDropdown.classList.remove('active');
-    menuToggle.classList.remove('active');
-    
     isMini = !isMini;
     document.body.classList.toggle('mini-mode');
     if (isMini) {
-        fullView.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        fullView.style.opacity = '0';
-        setTimeout(() => {
-            fullView.style.display = 'none';
-            miniView.style.display = 'flex';
-            miniView.style.animation = 'slideInRight 0.6s ease-out';
-            ipcRenderer.send('resize-window', 150, 150);
-        }, 400);
+        fullView.style.display = 'none';
+        miniView.style.display = 'flex';
+        ipcRenderer.send('resize-window', 150, 150);
     } else {
-        miniView.style.animation = 'slideInLeft 0.4s ease-out';
-        miniView.style.opacity = '0';
-        setTimeout(() => {
-            fullView.style.display = 'grid';
-            fullView.style.opacity = '0';
-            fullView.style.transform = 'scale(0.95)';
-            miniView.style.display = 'none';
-            fullView.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-            requestAnimationFrame(() => {
-                fullView.style.opacity = '1';
-                fullView.style.transform = 'scale(1)';
-            });
-            ipcRenderer.send('resize-window', 1200, 800);
-        }, 400);
+        fullView.style.display = 'grid';
+        miniView.style.display = 'none';
+        ipcRenderer.send('resize-window', 1200, 800);
     }
 }
 
@@ -400,7 +347,106 @@ document.getElementById('cancel-keys-btn').addEventListener('click', () => {
     document.getElementById('setup-overlay').style.display = 'none';
 });
 
-document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
+// ── SETTINGS MODAL ────────────────────────────────────────────────────────
+const settingsModal = document.getElementById('settings-modal');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsCloseBtn = document.getElementById('settings-close-btn');
+const settingsOverlay = document.querySelector('.settings-modal-overlay');
+
+function openSettingsModal() {
+    settingsModal.classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+    settingsModal.classList.add('hidden');
+}
+
+settingsBtn.addEventListener('click', openSettingsModal);
+settingsCloseBtn.addEventListener('click', closeSettingsModal);
+settingsOverlay.addEventListener('click', closeSettingsModal);
+
+// Close modal when clicking outside the content
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal || e.target === settingsOverlay) {
+        closeSettingsModal();
+    }
+});
+
+// Key press to close modal (Escape)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+        closeSettingsModal();
+    }
+});
+
+// ── UPDATE button (inside settings modal) ──────────────────────────────────
+document.getElementById('update-btn').addEventListener('click', async () => {
+    closeSettingsModal();
+    const overlay = document.getElementById('update-overlay');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'flex';
+    statusText.textContent = 'Initiating system update sequence...';
+    progressBar.style.width = '10%';
+
+    const success = await ipcRenderer.invoke('perform-update');
+
+    if (!success) {
+        statusText.textContent = 'Update sequence failed. Resuming standard operations.';
+        progressBar.style.width = '0%';
+        setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+    }
+    // success path is handled by 'hide-update-overlay' IPC event below
+});
+
+// ── KEYS button (inside settings modal) ────────────────────────────────────
+document.getElementById('keys-btn').addEventListener('click', () => {
+    closeSettingsModal();
+    openSetupOverlay();
+});
+
+document.getElementById('cancel-update-btn').addEventListener('click', () => {
+    const overlay = document.getElementById('update-overlay');
+    overlay.style.display = 'none';
+    ipcRenderer.send('cancel-update');
+});
+
+// ── Update overlay IPC events (from main.js) ───────────────────────────────
+ipcRenderer.on('show-update-overlay', (event, message) => {
+    const overlay = document.getElementById('update-overlay');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'flex';
+    if (message) statusText.textContent = message;
+    progressBar.style.width = '20%';
+});
+
+ipcRenderer.on('update-status', (event, message) => {
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    if (statusText && message) {
+        statusText.textContent = message;
+        // Update progress based on message content
+        if (message.includes('Checking')) progressBar.style.width = '30%';
+        else if (message.includes('Backup')) progressBar.style.width = '40%';
+        else if (message.includes('Git')) progressBar.style.width = '50%';
+        else if (message.includes('Synchronizing')) progressBar.style.width = '60%';
+        else if (message.includes('Dependencies')) progressBar.style.width = '70%';
+        else if (message.includes('complete')) progressBar.style.width = '100%';
+    }
+});
+
+ipcRenderer.on('update-progress', (event, progress) => {
+    const progressBar = document.getElementById('update-progress-bar');
+    if (progressBar) progressBar.style.width = `${progress}%`;
+});
+
+ipcRenderer.on('hide-update-overlay', () => {
+    const overlay = document.getElementById('update-overlay');
+    const progressBar = document.getElementById('update-progress-bar');
+    overlay.style.display = 'none';
+    progressBar.style.width = '0%';
+});
 
 // Init
 checkSetup();
