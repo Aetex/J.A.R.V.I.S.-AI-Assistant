@@ -628,7 +628,222 @@ body.mini-mode {
     color: #00f6ff;
 }
 
+/* Settings Button Specific */
+.settings-btn {
+    border-color: #a0d8ef;
+    color: #a0d8ef;
+    animation: settingsButtonGlow 2.5s ease-in-out infinite;
+}
+
+.settings-btn::before {
+    background: rgba(160, 216, 239, 0.1);
+}
+
+.settings-btn:hover {
+    box-shadow: 0 0 12px rgba(160, 216, 239, 0.6), inset 0 0 8px rgba(160, 216, 239, 0.1);
+    border-color: rgba(160, 216, 239, 0.95);
+}
+
+/* Glassmorphic Settings Modal */
+.settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.settings-modal.hidden {
+    display: none;
+}
+
+.settings-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 10, 20, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.settings-modal-content {
+    position: relative;
+    z-index: 2001;
+    background: rgba(10, 30, 50, 0.6);
+    border: 1px solid rgba(160, 216, 239, 0.4);
+    border-radius: 12px;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                inset 0 1px 2px 0 rgba(160, 216, 239, 0.2),
+                0 0 30px rgba(160, 216, 239, 0.2);
+    padding: 40px;
+    width: 90%;
+    max-width: 450px;
+    animation: modalSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    color: #a0d8ef;
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(160, 216, 239, 0.2);
+}
+
+.settings-close-btn {
+    background: none;
+    border: 1px solid rgba(160, 216, 239, 0.4);
+    color: #a0d8ef;
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.settings-close-btn:hover {
+    background: rgba(160, 216, 239, 0.1);
+    box-shadow: 0 0 12px rgba(160, 216, 239, 0.3);
+    border-color: rgba(160, 216, 239, 0.7);
+}
+
+.settings-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.settings-option-btn {
+    background: rgba(160, 216, 239, 0.08);
+    border: 1px solid rgba(160, 216, 239, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-option-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(160, 216, 239, 0.1), rgba(160, 216, 239, 0.2));
+    transition: left 0.3s ease;
+    z-index: 0;
+}
+
+.settings-option-btn:hover::before {
+    left: 0;
+}
+
+.settings-option-btn:hover {
+    background: rgba(160, 216, 239, 0.15);
+    border-color: rgba(160, 216, 239, 0.6);
+    box-shadow: 0 0 20px rgba(160, 216, 239, 0.4),
+                inset 0 0 15px rgba(160, 216, 239, 0.1);
+    transform: translateY(-2px);
+}
+
+.option-title {
+    position: relative;
+    z-index: 1;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+    font-weight: 500;
+}
+
+.option-desc {
+    position: relative;
+    z-index: 1;
+    color: rgba(160, 216, 239, 0.7);
+    font-size: 0.75rem;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* Update and Keys option specific colors */
+.update-option {
+    border-color: rgba(0, 255, 0, 0.3);
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.update-option .option-title {
+    color: #00ff00;
+}
+
+.update-option:hover {
+    background: rgba(0, 255, 0, 0.12);
+    border-color: rgba(0, 255, 0, 0.6);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 15px rgba(0, 255, 0, 0.08);
+}
+
+.keys-option {
+    border-color: rgba(0, 246, 255, 0.3);
+    background: rgba(0, 246, 255, 0.05);
+}
+
+.keys-option .option-title {
+    color: #00f6ff;
+}
+
+.keys-option:hover {
+    background: rgba(0, 246, 255, 0.12);
+    border-color: rgba(0, 246, 255, 0.6);
+    box-shadow: 0 0 20px rgba(0, 246, 255, 0.3),
+                inset 0 0 15px rgba(0, 246, 255, 0.08);
+}
+
 /* Animations */
+@keyframes settingsButtonGlow {
+    0% {
+        box-shadow: 0 0 0px rgba(160, 216, 239, 0);
+    }
+    50% {
+        box-shadow: 0 0 8px rgba(160, 216, 239, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0px rgba(160, 216, 239, 0);
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 @keyframes updateButtonGlow {
     0% {
         box-shadow: 0 0 0px rgba(0, 255, 0, 0);

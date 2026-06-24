@@ -347,10 +347,41 @@ document.getElementById('cancel-keys-btn').addEventListener('click', () => {
     document.getElementById('setup-overlay').style.display = 'none';
 });
 
-document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
+// ── SETTINGS MODAL ────────────────────────────────────────────────────────
+const settingsModal = document.getElementById('settings-modal');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsCloseBtn = document.getElementById('settings-close-btn');
+const settingsOverlay = document.querySelector('.settings-modal-overlay');
 
-// ── UPDATE button ──────────────────────────────────────────────────────────
+function openSettingsModal() {
+    settingsModal.classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+    settingsModal.classList.add('hidden');
+}
+
+settingsBtn.addEventListener('click', openSettingsModal);
+settingsCloseBtn.addEventListener('click', closeSettingsModal);
+settingsOverlay.addEventListener('click', closeSettingsModal);
+
+// Close modal when clicking outside the content
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal || e.target === settingsOverlay) {
+        closeSettingsModal();
+    }
+});
+
+// Key press to close modal (Escape)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+        closeSettingsModal();
+    }
+});
+
+// ── UPDATE button (inside settings modal) ──────────────────────────────────
 document.getElementById('update-btn').addEventListener('click', async () => {
+    closeSettingsModal();
     const overlay = document.getElementById('update-overlay');
     const statusText = document.getElementById('update-status-text');
     const progressBar = document.getElementById('update-progress-bar');
@@ -366,6 +397,12 @@ document.getElementById('update-btn').addEventListener('click', async () => {
         setTimeout(() => { overlay.style.display = 'none'; }, 3000);
     }
     // success path is handled by 'hide-update-overlay' IPC event below
+});
+
+// ── KEYS button (inside settings modal) ────────────────────────────────────
+document.getElementById('keys-btn').addEventListener('click', () => {
+    closeSettingsModal();
+    openSetupOverlay();
 });
 
 document.getElementById('cancel-update-btn').addEventListener('click', () => {

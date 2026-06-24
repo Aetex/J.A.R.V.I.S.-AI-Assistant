@@ -18,8 +18,7 @@
                 <div style="position: absolute; top: 10px; right: 15px; display: flex; gap: 5px; align-items: center;">
                     <button id="exit-btn" class="header-btn exit-btn">EXIT</button>
                     <button id="mini-toggle" class="header-btn mini-btn">MINI</button>
-                    <button id="update-btn" class="header-btn update-btn">UPDATE</button>
-                    <button id="keys-btn" class="header-btn keys-btn">KEYS</button>
+                    <button id="settings-btn" class="header-btn settings-btn">SETTINGS</button>
                 </div>
             </div>
             <div class="system-stats" style="flex-grow: 1; display: flex; flex-direction: column; height: calc(100% - 30px);">
@@ -106,6 +105,27 @@
                 </p>
             </div>
             <button id="cancel-update-btn" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL (Glassmorphic) -->
+    <div id="settings-modal" class="settings-modal hidden">
+        <div class="settings-modal-overlay"></div>
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                SETTINGS
+                <button id="settings-close-btn" class="settings-close-btn">X</button>
+            </div>
+            <div class="settings-modal-body">
+                <button id="update-btn" class="settings-option-btn update-option">
+                    <span class="option-title">System Update</span>
+                    <span class="option-desc">Check and install updates</span>
+                </button>
+                <button id="keys-btn" class="settings-option-btn keys-option">
+                    <span class="option-title">Configure Keys</span>
+                    <span class="option-desc">Manage API credentials</span>
+                </button>
+            </div>
         </div>
     </div>
 
