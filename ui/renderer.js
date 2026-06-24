@@ -206,6 +206,45 @@ micBtn.addEventListener('mouseleave', () => {
     micBtn.style.filter = 'drop-shadow(0 0 0px #00f6ff)';
 });
 
+// Menu System
+const menuToggle = document.getElementById('menu-toggle');
+const menuDropdown = document.getElementById('menu-dropdown');
+let isMenuOpen = false;
+
+menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isMenuOpen = !isMenuOpen;
+    menuDropdown.classList.toggle('active', isMenuOpen);
+    menuToggle.classList.toggle('active', isMenuOpen);
+    
+    // Add slight bounce animation
+    menuToggle.style.animation = 'none';
+    setTimeout(() => {
+        menuToggle.style.animation = '';
+    }, 10);
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.header-menu-container')) {
+        isMenuOpen = false;
+        menuDropdown.classList.remove('active');
+        menuToggle.classList.remove('active');
+    }
+});
+
+// Close menu when selecting an item
+const menuItems = document.querySelectorAll('.menu-item');
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // Smooth close animation
+        menuDropdown.style.transition = 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        setTimeout(() => {
+            menuDropdown.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }, 200);
+    });
+});
+
 // View Toggling
 const miniToggle = document.getElementById('mini-toggle');
 const exitBtn = document.getElementById('exit-btn');
@@ -215,14 +254,19 @@ const miniCore = document.getElementById('mini-core');
 let isMini = false;
 
 exitBtn.addEventListener('click', async () => {
+    // Close menu first
+    isMenuOpen = false;
+    menuDropdown.classList.remove('active');
+    menuToggle.classList.remove('active');
+    
     addMessage("Shutting down all systems, sir.", 'jarvis');
     
     // Shutdown animation
     const container = document.getElementById('full-view');
     if (container) {
-        container.style.transition = 'all 0.8s ease';
+        container.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         container.style.opacity = '0';
-        container.style.transform = 'scale(0.95)';
+        container.style.transform = 'scale(0.95) rotateX(10deg)';
     }
     
     setTimeout(() => {
@@ -237,29 +281,38 @@ exitBtn.addEventListener('click', async () => {
     }, 600);
 });
 
-// Exit button hover effect
-exitBtn.addEventListener('mouseenter', () => {
-    exitBtn.style.transition = 'all 0.2s ease';
-    exitBtn.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
-    exitBtn.style.transform = 'scale(1.05)';
-});
-
-exitBtn.addEventListener('mouseleave', () => {
-    exitBtn.style.boxShadow = 'none';
-    exitBtn.style.transform = 'scale(1)';
-});
-
 function toggleView() {
+    // Close menu first
+    isMenuOpen = false;
+    menuDropdown.classList.remove('active');
+    menuToggle.classList.remove('active');
+    
     isMini = !isMini;
     document.body.classList.toggle('mini-mode');
     if (isMini) {
-        fullView.style.display = 'none';
-        miniView.style.display = 'flex';
-        ipcRenderer.send('resize-window', 150, 150);
+        fullView.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        fullView.style.opacity = '0';
+        setTimeout(() => {
+            fullView.style.display = 'none';
+            miniView.style.display = 'flex';
+            miniView.style.animation = 'slideInRight 0.6s ease-out';
+            ipcRenderer.send('resize-window', 150, 150);
+        }, 400);
     } else {
-        fullView.style.display = 'grid';
-        miniView.style.display = 'none';
-        ipcRenderer.send('resize-window', 1200, 800);
+        miniView.style.animation = 'slideInLeft 0.4s ease-out';
+        miniView.style.opacity = '0';
+        setTimeout(() => {
+            fullView.style.display = 'grid';
+            fullView.style.opacity = '0';
+            fullView.style.transform = 'scale(0.95)';
+            miniView.style.display = 'none';
+            fullView.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            requestAnimationFrame(() => {
+                fullView.style.opacity = '1';
+                fullView.style.transform = 'scale(1)';
+            });
+            ipcRenderer.send('resize-window', 1200, 800);
+        }, 400);
     }
 }
 
