@@ -347,56 +347,13 @@ document.getElementById('cancel-keys-btn').addEventListener('click', () => {
     document.getElementById('setup-overlay').style.display = 'none';
 });
 
-document.getElementById('keys-btn').addEventListener('click', () => {
-    // Close the menu when keys is clicked
-    actionMenu.classList.remove('visible');
-    actionMenu.classList.add('hidden');
-    menuToggleBtn.classList.remove('active');
-    openSetupOverlay();
-});
-
-// ── MENU TOGGLE FUNCTIONALITY ──────────────────────────────────────────────
-const menuToggleBtn = document.getElementById('menu-toggle-btn');
-const actionMenu = document.getElementById('action-menu');
-
-menuToggleBtn.addEventListener('click', () => {
-    const isHidden = actionMenu.classList.contains('hidden');
-    
-    if (isHidden) {
-        actionMenu.classList.remove('hidden');
-        actionMenu.classList.add('visible');
-        menuToggleBtn.classList.add('active');
-        menuToggleBtn.style.animation = 'none';
-    } else {
-        actionMenu.classList.remove('visible');
-        actionMenu.classList.add('hidden');
-        menuToggleBtn.classList.remove('active');
-        menuToggleBtn.style.animation = '';
-    }
-});
-
-// Close menu when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.menu-toggle-wrapper')) {
-        actionMenu.classList.remove('visible');
-        actionMenu.classList.add('hidden');
-        menuToggleBtn.classList.remove('active');
-        menuToggleBtn.style.animation = '';
-    }
-});
+document.getElementById('keys-btn').addEventListener('click', openSetupOverlay);
 
 // ── UPDATE button ──────────────────────────────────────────────────────────
 document.getElementById('update-btn').addEventListener('click', async () => {
-    // Close the menu when update is clicked
-    actionMenu.classList.remove('visible');
-    actionMenu.classList.add('hidden');
-    menuToggleBtn.classList.remove('active');
-    
     const overlay = document.getElementById('update-overlay');
     const statusText = document.getElementById('update-status-text');
     const progressBar = document.getElementById('update-progress-bar');
-    
-    // Add animation when overlay appears
     overlay.style.display = 'flex';
     statusText.textContent = 'Initiating system update sequence...';
     progressBar.style.width = '10%';
@@ -406,9 +363,7 @@ document.getElementById('update-btn').addEventListener('click', async () => {
     if (!success) {
         statusText.textContent = 'Update sequence failed. Resuming standard operations.';
         progressBar.style.width = '0%';
-        setTimeout(() => { 
-            overlay.style.display = 'none';
-        }, 3000);
+        setTimeout(() => { overlay.style.display = 'none'; }, 3000);
     }
     // success path is handled by 'hide-update-overlay' IPC event below
 });

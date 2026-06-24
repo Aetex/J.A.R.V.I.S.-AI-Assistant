@@ -606,125 +606,30 @@ body.mini-mode {
     color: #00f6ff;
 }
 
-/* Menu Toggle Button */
-.menu-toggle-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.menu-toggle-btn {
+/* Update Button Specific */
+.update-btn {
     border-color: #00ff00;
     color: #00ff00;
-    animation: menuButtonGlow 2s ease-in-out infinite;
+    animation: updateButtonGlow 2s ease-in-out infinite;
 }
 
-.menu-toggle-btn::before {
+.update-btn::before {
     background: rgba(0, 255, 0, 0.1);
 }
 
-.menu-toggle-btn:hover {
+.update-btn:hover {
     box-shadow: 0 0 12px rgba(0, 255, 0, 0.6), inset 0 0 8px rgba(0, 255, 0, 0.1);
     border-color: rgba(0, 255, 0, 0.95);
 }
 
-.menu-toggle-btn.active {
-    background: rgba(0, 255, 0, 0.1);
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.7), inset 0 0 10px rgba(0, 255, 0, 0.2);
-}
-
-/* Action Menu Dropdown */
-.action-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: rgba(10, 20, 30, 0.95);
-    border: 1px solid rgba(0, 246, 255, 0.3);
-    border-radius: 5px;
-    margin-top: 5px;
-    min-width: 180px;
-    box-shadow: 0 0 20px rgba(0, 246, 255, 0.3), inset 0 0 10px rgba(0, 246, 255, 0.05);
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-}
-
-.action-menu.hidden {
-    display: none;
-    opacity: 0;
-    transform: translateY(-10px) scaleY(0.9);
-}
-
-.action-menu.visible {
-    display: flex;
-    flex-direction: column;
-    animation: menuDropdown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* Menu Items */
-.menu-item {
-    background: none;
-    border: none;
-    border-bottom: 1px solid rgba(0, 246, 255, 0.1);
-    color: #00f6ff;
-    padding: 12px 15px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.menu-item:last-child {
-    border-bottom: none;
-}
-
-.menu-item::before {
-    content: '';
-    position: absolute;
-    left: -100%;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, rgba(0, 246, 255, 0.1), rgba(0, 246, 255, 0.2));
-    transition: left 0.3s ease;
-    z-index: -1;
-}
-
-.menu-item:hover::before {
-    left: 0;
-}
-
-.menu-item:hover {
-    color: #fff;
-    text-shadow: 0 0 10px rgba(0, 246, 255, 0.6);
-    padding-left: 20px;
-}
-
-/* Update Item Specific */
-.update-item {
-    color: #00ff00;
-    border-bottom-color: rgba(0, 255, 0, 0.1);
-}
-
-.update-item::before {
-    background: linear-gradient(90deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.2));
-}
-
-.update-item:hover {
-    color: #fff;
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
-}
-
-/* Keys Item Specific */
-.keys-item {
+/* Keys Button Specific */
+.keys-btn {
+    border-color: #00f6ff;
     color: #00f6ff;
 }
 
 /* Animations */
-@keyframes menuButtonGlow {
+@keyframes updateButtonGlow {
     0% {
         box-shadow: 0 0 0px rgba(0, 255, 0, 0);
     }
@@ -733,28 +638,6 @@ body.mini-mode {
     }
     100% {
         box-shadow: 0 0 0px rgba(0, 255, 0, 0);
-    }
-}
-
-@keyframes menuDropdown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px) scaleY(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scaleY(1);
-    }
-}
-
-@keyframes updateButtonPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 0px rgba(0, 255, 0, 0.3);
-    }
-    50% {
-        transform: scale(1.02);
-        box-shadow: 0 0 12px rgba(0, 255, 0, 0.5);
     }
 }
 
