@@ -251,9 +251,11 @@ ipcMain.handle('perform-update', async (event) => {
     let updateCompleted = false;
     let updateFailed = false;
     let alreadyUpToDate = false;
+    let allOutput = ''; // Accumulate all output for better parsing
 
     updateProcess.stdout.on('data', (data) => {
       const output = data.toString();
+      allOutput += output; // Accumulate all output
       console.log(`[Updater]: ${output}`);
       
       // Parse output and send status updates
@@ -267,11 +269,14 @@ ipcMain.handle('perform-update', async (event) => {
         if (win) win.webContents.send('update-status', 'Synchronizing files...');
       } else if (output.includes('dependencies')) {
         if (win) win.webContents.send('update-status', 'Updating dependencies...');
-      } else if (output.includes('Already up to date')) {
+      } else if (output.includes('Already up to date') || output.includes('already up to date')) {
         if (win) win.webContents.send('update-status', 'Already up to date! No restart needed.');
         updateCompleted = true;
         alreadyUpToDate = true;
-      } else if (output.includes('complete') || output.includes('successfully')) {
+      } else if (output.includes('complete') || output.includes('successfully') || output.includes('updated successfully')) {
+        if (win) win.webContents.send('update-status', 'Update complete! Restarting...');
+        updateCompleted = true;
+      } else if (output.includes('[OK]') && (output.includes('Update marked as complete') || output.includes('updated successfully'))) {
         if (win) win.webContents.send('update-status', 'Update complete! Restarting...');
         updateCompleted = true;
       } else if (output.includes('ERROR') || output.includes('[!]')) {
@@ -282,21 +287,38 @@ ipcMain.handle('perform-update', async (event) => {
     });
 
     updateProcess.stderr.on('data', (data) => {
-      console.error(`[Updater Error]: ${data.toString()}`);
-      updateFailed = true;
+      const errorOutput = data.toString();
+      console.error(`[Updater Error]: ${errorOutput}`);
+      // Don't immediately mark as failed - some warnings go to stderr
+      // Only mark as failed if it's a real error
+      if (errorOutput.includes('ERROR') || errorOutput.includes('Error') || errorOutput.includes('Failed')) {
+        updateFailed = true;
+      }
     });
 
     return new Promise((resolve) => {
       updateProcess.on('close', (code) => {
         console.log(`[Updater] exited with code ${code}`);
+        console.log(`[Updater] Full output: ${allOutput}`);
         updateProcess = null;
         
-        if (code === 0 && updateCompleted && !updateFailed) {
+        // More robust success detection:
+        // 1. Exit code must be 0
+        // 2. Either updateCompleted flag is set OR output contains success indicators
+        // 3. No explicit failures detected
+        const hasSuccessIndicators = allOutput.includes('Already up to date') || 
+                                      allOutput.includes('updated successfully') ||
+                                      allOutput.includes('Update marked as complete') ||
+                                      allOutput.includes('J.A.R.V.I.S. updated successfully');
+        
+        const isSuccessful = code === 0 && !updateFailed && (updateCompleted || hasSuccessIndicators);
+        
+        if (isSuccessful) {
           if (win) {
             setTimeout(() => {
               win.webContents.send('hide-update-overlay');
               // Only restart if we actually updated something
-              if (!alreadyUpToDate) {
+              if (!alreadyUpToDate && !allOutput.includes('Already up to date')) {
                 app.relaunch();
                 app.exit();
               }
