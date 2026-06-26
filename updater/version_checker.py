@@ -65,9 +65,17 @@ class VersionChecker:
                     content = base64.b64decode(data['content']).decode('utf-8')
                     package_data = json.loads(content)
                     return package_data.get("version")
+                elif response.status == 403:
+                    print("[WARN] GitHub API rate limit exceeded, using local repository version")
+                    return None
                 else:
                     print(f"[WARN] GitHub API returned status {response.status}")
                     
+        except urllib.error.HTTPError as e:
+            if e.code == 403:
+                print("[WARN] GitHub API rate limit exceeded, using local repository version")
+                return None
+            print(f"[WARN] Could not fetch from GitHub API: {e}")
         except urllib.error.URLError as e:
             print(f"[WARN] Could not fetch from GitHub API: {e}")
         except Exception as e:
@@ -154,10 +162,15 @@ class VersionChecker:
                     print(f"[OK] Already up to date (version {current_version}, commit {current_commit[:7]})")
                     return False, current_version or "unknown", current_version or "unknown"
         
-        # Fallback to version-based check if git operations fail
+        # Fallback: if both versions are the same and we couldn't check commits, assume up to date
+        if current_version and latest_version and current_version == latest_version:
+            print(f"[OK] Already up to date (version {current_version})")
+            return False, current_version, latest_version
+        
+        # If we can't determine versions, check if we should update
         if not current_version or not latest_version:
-            print("[WARN] Could not determine versions or commits, proceeding with update")
-            return True, current_version or "unknown", latest_version or "unknown"
+            print("[WARN] Could not determine versions or commits, assuming up to date")
+            return False, current_version or "unknown", latest_version or "unknown"
         
         print(f"[OK] Already up to date (version {current_version})")
         return False, current_version, latest_version

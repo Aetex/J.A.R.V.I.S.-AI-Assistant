@@ -333,7 +333,9 @@ class JARVISUpdater:
         self.backup_manager.cleanup_old_backups(keep_count=5)
         self.update_manifest.cleanup_old_history(keep_count=20)
         
-        success_message = f"J.A.R.V.I.S. updated successfully to version {latest_version}!"
+        # Use the current version from package.json after sync
+        actual_version = self.version_checker.get_current_version()
+        success_message = f"J.A.R.V.I.S. updated successfully to version {actual_version or latest_version}!"
         
         # Auto-restart if requested
         if auto_restart:
