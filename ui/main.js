@@ -269,9 +269,11 @@ ipcMain.handle('perform-update', async (event) => {
       } else if (output.includes('complete') || output.includes('successfully')) {
         if (win) win.webContents.send('update-status', 'Update complete! Restarting...');
         updateCompleted = true;
-      } else if (output.includes('failed') || output.includes('error')) {
+      } else if (output.includes('ERROR') || output.includes('[!]')) {
+        // Only treat as failure if it's an actual error (marked with ERROR or [!])
         updateFailed = true;
       }
+      // Ignore WARN messages - they're not failures
     });
 
     updateProcess.stderr.on('data', (data) => {

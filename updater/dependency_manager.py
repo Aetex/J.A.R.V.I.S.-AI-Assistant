@@ -158,6 +158,21 @@ class DependencyManager:
         
         print("[*] Updating UI dependencies...")
         
+        # Check if npm is available
+        try:
+            npm_check = subprocess.run(
+                ["npm", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if npm_check.returncode != 0:
+                print("[WARN] npm not found, skipping UI dependency updates")
+                return True, "npm not found, skipping UI dependencies"
+        except Exception as e:
+            print(f"[WARN] npm not available, skipping UI dependency updates: {e}")
+            return True, "npm not available, skipping UI dependencies"
+        
         try:
             result = subprocess.run(
                 ["npm", "install", "--silent"],

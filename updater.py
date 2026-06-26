@@ -28,6 +28,7 @@ class JARVISUpdater:
     
     def __init__(self):
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.github_repo_url = "https://github.com/Aetex/J.A.R.V.I.S.-AI-Assistant.git"
         self.repo_dir = os.path.join(self.base_dir, "Github", "J.A.R.V.I.S.-AI-Assistant")
         
         # Initialize modules
@@ -37,27 +38,87 @@ class JARVISUpdater:
         self.dependency_manager = DependencyManager(self.base_dir)
         self.update_manifest = UpdateManifest(self.base_dir)
         
-        # Configuration
+        # Configuration - protected files that will never be overwritten
         self.ignored_items = {
             ".git",
             "venv",
             "node_modules",
             "voice",
             ".env",
+            ".env.*",  # Protect all .env files
             "memory.json",
+            "memory_*.json",  # Protect any memory backup files
             "jarvis.log",
+            "jarvis_*.log",  # Protect any log files
             "Github",
-            "__pycache__"
+            "__pycache__",
+            "backup",  # Protect backup directory
+            "build",  # Protect build directory
+            "dist",  # Protect dist directory
+            "*.db",  # Protect database files
+            "*.sqlite",  # Protect SQLite databases
+            "config.json",  # Protect local config
+            "settings.json",  # Protect local settings
+            "user_data.json",  # Protect user data
+            "api_keys.json",  # Protect API keys
+            "secrets.json"  # Protect secrets
         }
+    
+    def clone_repository(self) -> Tuple[bool, str]:
+        """
+        Clone the GitHub repository if it doesn't exist.
+        
+        Returns:
+            Tuple of (success, message)
+        """
+        print(f"[*] Cloning repository from {self.github_repo_url}...")
+        
+        try:
+            # Create the Github directory if it doesn't exist
+            github_dir = os.path.join(self.base_dir, "Github")
+            if not os.path.exists(github_dir):
+                os.makedirs(github_dir, exist_ok=True)
+            
+            # Clone the repository
+            result = subprocess.run(
+                ["git", "clone", self.github_repo_url, self.repo_dir],
+                cwd=github_dir,
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            
+            if result.returncode != 0:
+                error_msg = f"Git clone failed: {result.stderr}"
+                print(f"[ERROR] {error_msg}")
+                return False, error_msg
+            
+            print("[OK] Repository cloned successfully.")
+            return True, "Repository cloned successfully"
+            
+        except subprocess.TimeoutExpired:
+            error_msg = "Git clone timed out"
+            print(f"[ERROR] {error_msg}")
+            return False, error_msg
+        except Exception as e:
+            error_msg = f"Git clone failed: {str(e)}"
+            print(f"[ERROR] {error_msg}")
+            return False, error_msg
     
     def run_git_pull(self) -> Tuple[bool, str]:
         """
-        Run git pull to fetch latest changes.
+        Run git pull to fetch latest changes from remote repository.
         
         Returns:
             Tuple of (success, message)
         """
         print(f"[*] Running git pull in {self.repo_dir}...")
+        
+        # Check if repository exists, if not clone it
+        if not os.path.exists(self.repo_dir):
+            clone_success, clone_message = self.clone_repository()
+            if not clone_success:
+                return False, clone_message
         
         try:
             result = subprocess.run(
@@ -84,6 +145,47 @@ class JARVISUpdater:
             error_msg = f"Git pull failed: {str(e)}"
             print(f"[ERROR] {error_msg}")
             return False, error_msg
+    
+    def is_protected_file(self, filename: str) -> bool:
+        """
+        Check if a file should be protected from updates.
+        
+        Args:
+            filename: Name of the file to check
+            
+        Returns:
+            True if file should be protected, False otherwise
+        """
+        # Check exact matches first
+        if filename in self.ignored_items:
+            return True
+        
+        # Check wildcard patterns
+        for item in self.ignored_items:
+            if '*' in item:
+                pattern = item.replace('*', '')
+                if pattern in filename:
+                    return True
+        
+        # Check for common personal data patterns
+        protected_patterns = [
+            '.env',
+            'memory',
+            'jarvis.log',
+            '.db',
+            '.sqlite',
+            'config',
+            'settings',
+            'user_data',
+            'api_keys',
+            'secrets'
+        ]
+        
+        for pattern in protected_patterns:
+            if pattern in filename.lower():
+                return True
+        
+        return False
     
     def synchronize_files(self) -> Tuple[bool, str]:
         """
@@ -112,12 +214,19 @@ class JARVISUpdater:
                 
                 # Copy files
                 for file in files:
-                    if file in self.ignored_items:
+                    # Check if file should be protected
+                    if self.is_protected_file(file):
+                        print(f"[PROTECT] Skipping protected file: {file}")
                         continue
+                    
                     src_file = os.path.join(root, file)
                     dest_file = os.path.join(target_dir, file)
                     
-                    # Skip if destination is identical to source
+                    # Additional protection: check if destination file exists and is protected
+                    if os.path.exists(dest_file) and self.is_protected_file(file):
+                        print(f"[PROTECT] Skipping existing protected file: {file}")
+                        continue
+                    
                     try:
                         shutil.copy2(src_file, dest_file)
                     except Exception as e:
@@ -140,8 +249,12 @@ class JARVISUpdater:
         """
         print("[*] Checking for updates...")
         
+        # Check if repository exists, if not clone it
         if not os.path.exists(self.repo_dir):
-            return False, "unknown", "unknown", f"Repository directory not found at: {self.repo_dir}"
+            print("[*] Repository not found locally, cloning from GitHub...")
+            clone_success, clone_message = self.clone_repository()
+            if not clone_success:
+                return False, "unknown", "unknown", f"Repository cloning failed: {clone_message}"
         
         update_available, current_version, latest_version = self.version_checker.check_update_available()
         
