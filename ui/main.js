@@ -250,6 +250,7 @@ ipcMain.handle('perform-update', async (event) => {
 
     let updateCompleted = false;
     let updateFailed = false;
+    let alreadyUpToDate = false;
 
     updateProcess.stdout.on('data', (data) => {
       const output = data.toString();
@@ -266,6 +267,10 @@ ipcMain.handle('perform-update', async (event) => {
         if (win) win.webContents.send('update-status', 'Synchronizing files...');
       } else if (output.includes('dependencies')) {
         if (win) win.webContents.send('update-status', 'Updating dependencies...');
+      } else if (output.includes('Already up to date')) {
+        if (win) win.webContents.send('update-status', 'Already up to date! No restart needed.');
+        updateCompleted = true;
+        alreadyUpToDate = true;
       } else if (output.includes('complete') || output.includes('successfully')) {
         if (win) win.webContents.send('update-status', 'Update complete! Restarting...');
         updateCompleted = true;
@@ -290,9 +295,11 @@ ipcMain.handle('perform-update', async (event) => {
           if (win) {
             setTimeout(() => {
               win.webContents.send('hide-update-overlay');
-              // Restart the app
-              app.relaunch();
-              app.exit();
+              // Only restart if we actually updated something
+              if (!alreadyUpToDate) {
+                app.relaunch();
+                app.exit();
+              }
             }, 2000);
           }
           resolve(true);
