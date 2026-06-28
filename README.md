@@ -9,7 +9,7 @@
 
 **Current version:** v0.4
 
-> **Development warning:** JARVIS v0.3.5 is still under active development. Expect some rough edges and possible bugs while the systems are being upgraded.
+> **Development warning:** JARVIS v0.4 is still under active development. Expect some rough edges and possible bugs while the systems are being upgraded.
 
 > *"I am Iron Man."*
 
@@ -72,7 +72,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 
 1. **Option A: Clone with Git** (Recommended):
    ```powershell
-   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/aetex/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
    **Option B: Download ZIP**:
@@ -92,7 +92,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 
 1. **Option A: Clone with Git** (Recommended):
    ```bash
-   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/aetex/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
    **Option B: Download ZIP**:
@@ -115,7 +115,7 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/TheUnkownDev/J.A.R.V.I.S.-AI-Assistant.git
+   git clone https://github.com/aetex/J.A.R.V.I.S.-AI-Assistant.git
    cd J.A.R.V.I.S.-AI-Assistant
    ```
 2. **Run the Installer**:
