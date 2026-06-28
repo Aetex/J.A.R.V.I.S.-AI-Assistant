@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const Store = require('electron-store');
 const fs = require('fs');
 
@@ -221,8 +221,76 @@ ipcMain.on('save-api-keys', (event, keys) => {
   startBackend();
 });
 
-// ── UPDATE SYSTEM IPC HANDLERS ───────────────────────────────────────────
 let updateProcess = null;
+
+// Helper to run a command and return a Promise
+function runCommandPromise(cmd, cwd) {
+  return new Promise((resolve) => {
+    exec(cmd, { cwd }, (err, stdout, stderr) => {
+      resolve({ success: !err, stdout: stdout || '', stderr: stderr || '' });
+    });
+  });
+}
+
+// Check if update is available
+async function isUpdateAvailable() {
+  const repoPath = path.join(__dirname, '..', 'Github', 'J.A.R.V.I.S.-AI-Assistant');
+  if (!fs.existsSync(repoPath)) {
+    console.log("[*] GitHub repository not found at:", repoPath);
+    return false;
+  }
+
+  console.log("[*] Fetching latest updates from GitHub...");
+  const fetchRes = await runCommandPromise('git fetch', repoPath);
+  if (!fetchRes.success) {
+    console.log("[WARN] Failed to fetch updates (offline or git error). Skipping update check.");
+    return false;
+  }
+
+  const diffRes = await runCommandPromise('git rev-list --count HEAD..origin/main', repoPath);
+  if (!diffRes.success) {
+    console.error("Failed to compare HEAD with origin/main.");
+    return false;
+  }
+
+  const count = parseInt(diffRes.stdout.trim(), 10);
+  return count > 0;
+}
+
+// Run updater.py using venv python
+function runUpdater() {
+  return new Promise((resolve) => {
+    const pythonPath = path.join(__dirname, '..', 'venv', 'Scripts', 'python.exe');
+    const updaterPath = path.join(__dirname, '..', 'updater.py');
+    
+    if (!fs.existsSync(pythonPath) || !fs.existsSync(updaterPath)) {
+      resolve({ success: false, message: 'Python virtual env or updater.py not found.' });
+      return;
+    }
+
+    const updater = spawn(pythonPath, [updaterPath]);
+    
+    let output = '';
+    updater.stdout.on('data', (data) => {
+      output += data.toString();
+      const lines = data.toString().split('\n');
+      for (let line of lines) {
+        if (line.trim().startsWith('[*]') || line.trim().startsWith('[OK]')) {
+          if (win) win.webContents.send('update-status', line.trim());
+          console.log(`[Updater]: ${line.trim()}`);
+        }
+      }
+    });
+
+    updater.stderr.on('data', (data) => {
+      console.error(`[Updater Error]: ${data}`);
+    });
+
+    updater.on('close', (code) => {
+      resolve({ success: code === 0, message: output });
+    });
+  });
+}
 
 ipcMain.handle('perform-update', async (event) => {
   const baseDir = path.join(__dirname, '..');
