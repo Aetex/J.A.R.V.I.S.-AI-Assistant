@@ -315,22 +315,23 @@ ipcMain.handle('perform-update', async (event) => {
         
         if (isSuccessful) {
           if (win) {
-            setTimeout(() => {
-              win.webContents.send('hide-update-overlay');
-              // Only restart if we actually updated something
-              if (!alreadyUpToDate && !allOutput.includes('Already up to date')) {
+            const isUpToDate = alreadyUpToDate || allOutput.includes('Already up to date') || allOutput.includes('Already up-to-date');
+            if (isUpToDate) {
+              win.webContents.send('update-success', 'System is already up to date. No updates needed.');
+            } else {
+              win.webContents.send('update-success', 'Update complete! Restarting J.A.R.V.I.S. system...');
+              setTimeout(() => {
                 app.relaunch();
                 app.exit();
-              }
-            }, 2000);
+              }, 2500);
+            }
           }
           resolve(true);
         } else {
           if (win) {
-            win.webContents.send('update-status', 'Update failed. Please check console for details.');
-            setTimeout(() => {
-              win.webContents.send('hide-update-overlay');
-            }, 3000);
+            const errorLines = allOutput.split('\n').filter(l => l.toLowerCase().includes('failed') || l.includes('ERROR') || l.includes('[!]'));
+            const descriptiveError = errorLines.length > 0 ? errorLines[errorLines.length - 1].trim() : 'Unknown error occurred during installation.';
+            win.webContents.send('update-error', descriptiveError);
           }
           resolve(false);
         }
@@ -340,10 +341,7 @@ ipcMain.handle('perform-update', async (event) => {
   } catch (error) {
     console.error("[!] Update process error:", error);
     if (win) {
-      win.webContents.send('update-status', 'Update failed: ' + error.message);
-      setTimeout(() => {
-        win.webContents.send('hide-update-overlay');
-      }, 3000);
+      win.webContents.send('update-error', 'Update failed: ' + error.message);
     }
     return false;
   }
@@ -424,7 +422,36 @@ app.whenReady().then(() => {
   syncStoreToEnv();
   createWindow();
   createTray();
-  startBackend();
+
+  // Wait for window to load its DOM before starting auto-update check
+  win.webContents.once('did-finish-load', async () => {
+    const updateAvailable = await isUpdateAvailable();
+    if (updateAvailable) {
+      console.log("[*] System updates available. Triggering auto-update...");
+      win.webContents.send('show-update-overlay', 'System update detected. Downloading latest changes...');
+      
+      // Perform the update
+      const res = await runUpdater();
+      if (res.success) {
+        win.webContents.send('update-success', 'Auto-update complete! Restarting system...');
+        setTimeout(() => {
+          app.relaunch();
+          app.exit();
+        }, 2500);
+      } else {
+        const errorLines = res.message.split('\n').filter(l => l.toLowerCase().includes('failed') || l.includes('ERROR') || l.includes('[!]'));
+        const descriptiveError = errorLines.length > 0 ? errorLines[errorLines.length - 1].trim() : 'Unknown error occurred.';
+        win.webContents.send('update-error', `Auto-update failed: ${descriptiveError}`);
+        setTimeout(() => {
+          win.webContents.send('hide-update-overlay');
+          startBackend();
+        }, 4000);
+      }
+    } else {
+      console.log("[*] System is up-to-date. Starting backend...");
+      startBackend();
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

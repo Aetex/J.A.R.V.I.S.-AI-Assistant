@@ -95,16 +95,19 @@
     <!-- UPDATE OVERLAY -->
     <div id="update-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 10, 20, 0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; font-family: 'Orbitron';">
         <div class="panel" style="width: 500px; padding: 30px; text-align: center;">
-            <h2 style="color: #00ff00; letter-spacing: 3px; margin-bottom: 20px;">SYSTEM UPDATE</h2>
+            <h2 id="update-header" style="color: #00ff00; letter-spacing: 3px; margin-bottom: 20px;">SYSTEM UPDATE</h2>
             <div style="margin-bottom: 30px;">
-                <div style="width: 100%; height: 4px; background: rgba(0, 255, 0, 0.2); margin: 20px 0; overflow: hidden;">
+                <div id="update-progress-container" style="width: 100%; height: 4px; background: rgba(0, 255, 0, 0.2); margin: 20px 0; overflow: hidden;">
                     <div id="update-progress-bar" style="width: 0%; height: 100%; background: #00ff00; transition: width 0.3s ease;"></div>
                 </div>
                 <p id="update-status-text" style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 1rem; margin-bottom: 20px;">
                     Initializing update sequence...
                 </p>
             </div>
-            <button id="cancel-update-btn" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">CANCEL</button>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="cancel-update-btn" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">CANCEL</button>
+                <button id="dismiss-update-btn" style="display: none; background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: #00f6ff; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">DISMISS</button>
+            </div>
         </div>
     </div>
 

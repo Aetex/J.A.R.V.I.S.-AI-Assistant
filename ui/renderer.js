@@ -380,23 +380,32 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── UPDATE button (inside settings modal) ──────────────────────────────────
+function resetUpdateUI() {
+    const header = document.getElementById('update-header');
+    const progressBar = document.getElementById('update-progress-bar');
+    const cancelBtn = document.getElementById('cancel-update-btn');
+    const dismissBtn = document.getElementById('dismiss-update-btn');
+    
+    header.textContent = 'SYSTEM UPDATE';
+    header.style.color = '#00ff00'; 
+    progressBar.style.width = '0%';
+    progressBar.style.backgroundColor = '#00ff00'; 
+    cancelBtn.style.display = 'inline-block';
+    dismissBtn.style.display = 'none';
+}
+
 document.getElementById('update-btn').addEventListener('click', async () => {
     closeSettingsModal();
     const overlay = document.getElementById('update-overlay');
     const statusText = document.getElementById('update-status-text');
     const progressBar = document.getElementById('update-progress-bar');
+    
+    resetUpdateUI();
     overlay.style.display = 'flex';
     statusText.textContent = 'Initiating system update sequence...';
     progressBar.style.width = '10%';
 
-    const success = await ipcRenderer.invoke('perform-update');
-
-    if (!success) {
-        statusText.textContent = 'Update sequence failed. Resuming standard operations.';
-        progressBar.style.width = '0%';
-        setTimeout(() => { overlay.style.display = 'none'; }, 3000);
-    }
-    // success path is handled by 'hide-update-overlay' IPC event below
+    await ipcRenderer.invoke('perform-update');
 });
 
 // ── KEYS button (inside settings modal) ────────────────────────────────────
@@ -411,11 +420,18 @@ document.getElementById('cancel-update-btn').addEventListener('click', () => {
     ipcRenderer.send('cancel-update');
 });
 
+document.getElementById('dismiss-update-btn').addEventListener('click', () => {
+    const overlay = document.getElementById('update-overlay');
+    overlay.style.display = 'none';
+});
+
 // ── Update overlay IPC events (from main.js) ───────────────────────────────
 ipcRenderer.on('show-update-overlay', (event, message) => {
     const overlay = document.getElementById('update-overlay');
     const statusText = document.getElementById('update-status-text');
     const progressBar = document.getElementById('update-progress-bar');
+    
+    resetUpdateUI();
     overlay.style.display = 'flex';
     if (message) statusText.textContent = message;
     progressBar.style.width = '20%';
@@ -431,14 +447,67 @@ ipcRenderer.on('update-status', (event, message) => {
         else if (message.includes('Backup')) progressBar.style.width = '40%';
         else if (message.includes('Git')) progressBar.style.width = '50%';
         else if (message.includes('Synchronizing')) progressBar.style.width = '60%';
-        else if (message.includes('Dependencies')) progressBar.style.width = '70%';
-        else if (message.includes('complete')) progressBar.style.width = '100%';
+        else if (message.includes('dependencies')) progressBar.style.width = '75%';
+        else if (message.includes('complete') || message.includes('success')) progressBar.style.width = '100%';
     }
 });
 
 ipcRenderer.on('update-progress', (event, progress) => {
     const progressBar = document.getElementById('update-progress-bar');
     if (progressBar) progressBar.style.width = `${progress}%`;
+});
+
+ipcRenderer.on('update-success', (event, message) => {
+    const header = document.getElementById('update-header');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    const cancelBtn = document.getElementById('cancel-update-btn');
+    const dismissBtn = document.getElementById('dismiss-update-btn');
+    
+    const isAlreadyUpToDate = message && (
+        message.toLowerCase().includes('already up to date') || 
+        message.toLowerCase().includes('already up-to-date') || 
+        message.toLowerCase().includes('no updates needed')
+    );
+    
+    if (isAlreadyUpToDate) {
+        header.textContent = 'SYSTEM UP TO DATE';
+        header.style.color = '#00f6ff';
+        progressBar.style.width = '100%';
+        progressBar.style.backgroundColor = '#00f6ff';
+    } else {
+        header.textContent = 'UPDATE SUCCEEDED';
+        header.style.color = '#00ff00';
+        progressBar.style.width = '100%';
+        progressBar.style.backgroundColor = '#00ff00';
+    }
+    
+    statusText.textContent = message || 'System successfully updated.';
+    cancelBtn.style.display = 'none';
+    
+    // If it's about to restart/relaunch, don't show the dismiss button to avoid confusion
+    if (message && !message.includes('Restarting') && !message.includes('relaunch')) {
+        dismissBtn.style.display = 'inline-block';
+    } else if (!message) {
+        dismissBtn.style.display = 'inline-block';
+    }
+});
+
+ipcRenderer.on('update-error', (event, error) => {
+    const header = document.getElementById('update-header');
+    const statusText = document.getElementById('update-status-text');
+    const progressBar = document.getElementById('update-progress-bar');
+    const cancelBtn = document.getElementById('cancel-update-btn');
+    const dismissBtn = document.getElementById('dismiss-update-btn');
+    
+    header.textContent = 'UPDATE FAILED';
+    header.style.color = '#ff3c3c';
+    progressBar.style.width = '100%';
+    progressBar.style.backgroundColor = '#ff3c3c';
+    statusText.textContent = error || 'An error occurred during update.';
+    
+    cancelBtn.style.display = 'none';
+    dismissBtn.style.display = 'inline-block';
 });
 
 ipcRenderer.on('hide-update-overlay', () => {
