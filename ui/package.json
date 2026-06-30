@@ -1,14 +1,14 @@
 {
-  "name": "ui",
-  "version": "0.4.0",
-  "description": "",
+  "name": "jarvis",
+  "version": "0.5.0",
+  "description": "J.A.R.V.I.S. AI Assistant",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "AeteX",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "electron": "^42.0.1",
