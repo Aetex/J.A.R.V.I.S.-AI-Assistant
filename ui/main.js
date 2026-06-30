@@ -617,7 +617,7 @@ ipcMain.handle('get-llama-cpp-status', async () => {
       const envContent = fs.readFileSync(envPath, 'utf8');
       const match = envContent.match(/LLAMA_CPP_ENABLED\s*=\s*["']?([^"'\r\n]+)["']?/);
       if (match) {
-        const enabled = match[1].toLowerCase() in ('1', 'true', 'yes', 'on');
+        const enabled = ['1', 'true', 'yes', 'on'].includes(match[1].toLowerCase());
         const modelMatch = envContent.match(/LLAMA_CPP_MODEL_PATH\s*=\s*["']?([^"'\r\n]+)["']?/);
         return {
           enabled: enabled,
