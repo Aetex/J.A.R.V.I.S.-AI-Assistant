@@ -4,17 +4,15 @@ const { spawn, exec } = require('child_process');
 const Store = require('electron-store');
 const fs = require('fs');
 
-// Import llama manager
-const { createRequire } = require('module');
-const requireFn = createRequire(import.meta.url || __filename);
+// Set base directory
 const baseDir = path.join(__dirname, '..');
 
-// Dynamically import llama_manager
-let llamaManager = null;
+// Check for llama_manager availability
+let llamaManagerAvailable = false;
 try {
   const llamaManagerPath = path.join(baseDir, 'core', 'llama_manager.py');
   if (fs.existsSync(llamaManagerPath)) {
-    // We'll use a Python subprocess to run llama manager functions
+    llamaManagerAvailable = true;
     console.log("[*] llama_manager.py found, local model support available");
   }
 } catch (e) {
