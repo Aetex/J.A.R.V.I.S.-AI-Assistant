@@ -1014,31 +1014,28 @@ ipcMain.handle('load-model', async (event, modelPath) => {
             console.log("[*] Engine reloaded successfully");
           } else {
             console.log("[*] Engine reload failed, using fallback");
-            // Fallback: restart backend
             restartBackend();
           }
         });
         
         req.on('error', (error) => {
           console.error("[*] Failed to reload engine:", error);
-          // Fallback: restart backend
           restartBackend();
         });
         
         req.write(data);
         req.end();
         
-        return { success: true, message: "Model loaded and engine reloaded successfully" };
+        return { success: true };
       } catch (error) {
         console.error("[*] Error in reload process:", error);
-        // Final fallback: restart backend
         restartBackend();
-        return { success: true, message: "Model loaded (backend restarted)" };
+        return { success: true };
       }
     } else {
       // Development mode - no backend running, just save config
       console.log("[*] Development mode: Configuration saved, no backend to reload");
-      return { success: true, message: "Model configuration saved (reload manually in dev mode)" };
+      return { success: true };
     }
   } catch (error) {
     throw new Error('Failed to load model: ' + error.message);

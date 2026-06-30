@@ -643,6 +643,7 @@ async function loadDownloadedModels() {
     
     try {
         const models = await ipcRenderer.invoke('get-downloaded-models');
+        const llamaStatus = await ipcRenderer.invoke('get-llama-cpp-status');
         
         if (models.length === 0) {
             modelsDiv.innerHTML = '<div style="color: #a0d8ef; font-family: \'Rajdhani\'; font-size: 0.9rem;">No models downloaded yet.</div>';
@@ -651,14 +652,22 @@ async function loadDownloadedModels() {
         
         let html = '';
         models.forEach(model => {
+            const isLoaded = llamaStatus.enabled && llamaStatus.modelPath && model.path === llamaStatus.modelPath;
+            const isActiveClass = isLoaded ? 'rgba(0, 255, 0, 0.2)' : 'rgba(0, 246, 255, 0.1)';
+            const isActiveBorder = isLoaded ? '#00ff00' : 'rgba(0, 246, 255, 0.3)';
+            const activeIndicator = isLoaded ? '<span style="color: #00ff00; font-size: 0.7rem; margin-left: 5px;">● ACTIVE</span>' : '';
+            
             html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(0, 246, 255, 0.1); border: 1px solid rgba(0, 246, 255, 0.3); border-radius: 3px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: ${isActiveClass}; border: 1px solid ${isActiveBorder}; border-radius: 3px;">
                     <div>
-                        <div style="color: #00f6ff; font-weight: bold;">${model.name}</div>
+                        <div style="color: #00f6ff; font-weight: bold;">${model.name} ${activeIndicator}</div>
                         <div style="color: #a0d8ef; font-size: 0.8rem;">${model.size_gb} GB</div>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button onclick="loadModel('${model.path}')" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">LOAD</button>
+                        ${isLoaded 
+                            ? `<button onclick="unloadModel('${model.path}')" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">UNLOAD</button>`
+                            : `<button onclick="loadModel('${model.path}')" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">LOAD</button>`
+                        }
                         <button onclick="deleteModel('${model.file}')" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">DELETE</button>
                     </div>
                 </div>
@@ -751,9 +760,21 @@ async function deleteModel(filename) {
 async function loadModel(modelPath) {
     try {
         const result = await ipcRenderer.invoke('load-model', modelPath);
-        alert(result.message || 'Model loaded successfully!');
+        // Refresh the model list to update button states
+        loadDownloadedModels();
     } catch (error) {
-        alert('Failed to load model: ' + error.message);
+        console.error('Failed to load model:', error);
+    }
+}
+
+async function unloadModel(modelPath) {
+    try {
+        // Disable the model by setting LLAMA_CPP_ENABLED to false
+        await ipcRenderer.invoke('set-llama-cpp-enabled', false);
+        // Refresh the model list to update button states
+        loadDownloadedModels();
+    } catch (error) {
+        console.error('Failed to unload model:', error);
     }
 }
 

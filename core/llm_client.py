@@ -113,8 +113,21 @@ class JARVISEngine:
         if not LLAMA_CPP_AVAILABLE:
             return "Sir, llama.cpp is not installed. Please run the installer and enable local model support."
         
-        if not os.path.exists(self.llama_cpp_model_path):
-            return f"Sir, the model file was not found at {self.llama_cpp_model_path}. Please download a model first."
+        # Normalize the path to handle different path formats
+        normalized_path = os.path.normpath(self.llama_cpp_model_path)
+        
+        # If path is relative, make it absolute from current directory
+        if not os.path.isabs(normalized_path):
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(script_dir)
+            normalized_path = os.path.join(project_root, normalized_path)
+            normalized_path = os.path.normpath(normalized_path)
+        
+        print(f"[*] Looking for model at: {normalized_path}")
+        print(f"[*] Path exists: {os.path.exists(normalized_path)}")
+        
+        if not os.path.exists(normalized_path):
+            return f"Sir, the model file was not found at {normalized_path}. Please download a model first."
         
         if not any(m["role"] == "system" for m in self.messages):
             self.messages.insert(0, {"role": "system", "content": self.system_prompt})
@@ -124,7 +137,7 @@ class JARVISEngine:
         try:
             # Initialize llama.cpp model
             llm = Llama(
-                model_path=self.llama_cpp_model_path,
+                model_path=normalized_path,
                 n_ctx=2048,
                 n_threads=4,
                 verbose=False
