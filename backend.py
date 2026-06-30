@@ -136,6 +136,15 @@ async def get_status():
         "online": True
     }
 
+@app.post("/reload-engine")
+async def reload_engine():
+    """Reloads the JARVIS engine configuration without restarting."""
+    try:
+        jarvis.load_engines()
+        return {"success": True, "message": "Engine reloaded successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/chat")
 async def chat(request: ChatRequest):
     """Processes a chat message and returns the response + tool logs."""

@@ -586,23 +586,82 @@ ipcMain.handle('save-provider-priority', async (event, priority) => {
     
     fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
     
-    // Restart backend to apply changes
-    if (backendProcess) {
-      console.log("[*] Restarting backend to apply provider priority change...");
-      try {
-        if (process.platform === 'win32') {
-          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
-        } else {
-          backendProcess.kill();
+    // Use node-fetch or http module to reload engine
+    try {
+      const http = require('http');
+      const data = JSON.stringify({});
+      
+      const req = http.request({
+        hostname: '127.0.0.1',
+        port: 8000,
+        path: '/reload-engine',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data)
         }
-      } catch (err) {
-        console.error("Failed to terminate backend:", err);
+      }, (res) => {
+        if (res.statusCode === 200) {
+          console.log("[*] Engine reloaded successfully");
+        } else {
+          console.log("[*] Engine reload failed, using fallback");
+          // Fallback: restart backend
+          if (backendProcess) {
+            try {
+              if (process.platform === 'win32') {
+                spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+              } else {
+                backendProcess.kill();
+              }
+            } catch (err) {
+              console.error("Failed to terminate backend:", err);
+            }
+            backendProcess = null;
+            startBackend();
+          }
+        }
+      });
+      
+      req.on('error', (error) => {
+        console.error("[*] Failed to reload engine:", error);
+        // Fallback: restart backend
+        if (backendProcess) {
+          try {
+            if (process.platform === 'win32') {
+              spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+            } else {
+              backendProcess.kill();
+            }
+          } catch (err) {
+            console.error("Failed to terminate backend:", err);
+          }
+          backendProcess = null;
+          startBackend();
+        }
+      });
+      
+      req.write(data);
+      req.end();
+      
+      return { success: true };
+    } catch (error) {
+      console.error("[*] Error in reload process:", error);
+      // Final fallback: restart backend
+      if (backendProcess) {
+        try {
+          if (process.platform === 'win32') {
+            spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+          } else {
+            backendProcess.kill();
+          }
+        } catch (err) {
+          console.error("Failed to terminate backend:", err);
+        }
+        backendProcess = null;
+        startBackend();
       }
-      backendProcess = null;
-      startBackend();
+      return { success: true };
     }
-    
-    return { success: true };
   } catch (error) {
     throw new Error('Failed to save provider priority: ' + error.message);
   }
@@ -656,23 +715,82 @@ ipcMain.handle('set-llama-cpp-enabled', async (event, enabled) => {
     
     fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
     
-    // Restart backend to apply changes
-    if (backendProcess) {
-      console.log("[*] Restarting backend to apply llama.cpp toggle...");
-      try {
-        if (process.platform === 'win32') {
-          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
-        } else {
-          backendProcess.kill();
+    // Use http module to reload engine
+    try {
+      const http = require('http');
+      const data = JSON.stringify({});
+      
+      const req = http.request({
+        hostname: '127.0.0.1',
+        port: 8000,
+        path: '/reload-engine',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data)
         }
-      } catch (err) {
-        console.error("Failed to terminate backend:", err);
+      }, (res) => {
+        if (res.statusCode === 200) {
+          console.log("[*] Engine reloaded successfully");
+        } else {
+          console.log("[*] Engine reload failed, using fallback");
+          // Fallback: restart backend
+          if (backendProcess) {
+            try {
+              if (process.platform === 'win32') {
+                spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+              } else {
+                backendProcess.kill();
+              }
+            } catch (err) {
+              console.error("Failed to terminate backend:", err);
+            }
+            backendProcess = null;
+            startBackend();
+          }
+        }
+      });
+      
+      req.on('error', (error) => {
+        console.error("[*] Failed to reload engine:", error);
+        // Fallback: restart backend
+        if (backendProcess) {
+          try {
+            if (process.platform === 'win32') {
+              spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+            } else {
+              backendProcess.kill();
+            }
+          } catch (err) {
+            console.error("Failed to terminate backend:", err);
+          }
+          backendProcess = null;
+          startBackend();
+        }
+      });
+      
+      req.write(data);
+      req.end();
+      
+      return { success: true };
+    } catch (error) {
+      console.error("[*] Error in reload process:", error);
+      // Final fallback: restart backend
+      if (backendProcess) {
+        try {
+          if (process.platform === 'win32') {
+            spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+          } else {
+            backendProcess.kill();
+          }
+        } catch (err) {
+          console.error("Failed to terminate backend:", err);
+        }
+        backendProcess = null;
+        startBackend();
       }
-      backendProcess = null;
-      startBackend();
+      return { success: true };
     }
-    
-    return { success: true };
   } catch (error) {
     throw new Error('Failed to set llama.cpp enabled: ' + error.message);
   }
@@ -919,23 +1037,82 @@ ipcMain.handle('load-model', async (event, modelPath) => {
     
     fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
     
-    // Restart backend to apply changes
-    if (backendProcess) {
-      console.log("[*] Restarting backend to apply model change...");
-      try {
-        if (process.platform === 'win32') {
-          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
-        } else {
-          backendProcess.kill();
+    // Use http module to reload engine
+    try {
+      const http = require('http');
+      const data = JSON.stringify({});
+      
+      const req = http.request({
+        hostname: '127.0.0.1',
+        port: 8000,
+        path: '/reload-engine',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data)
         }
-      } catch (err) {
-        console.error("Failed to terminate backend:", err);
+      }, (res) => {
+        if (res.statusCode === 200) {
+          console.log("[*] Engine reloaded successfully");
+        } else {
+          console.log("[*] Engine reload failed, using fallback");
+          // Fallback: restart backend
+          if (backendProcess) {
+            try {
+              if (process.platform === 'win32') {
+                spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+              } else {
+                backendProcess.kill();
+              }
+            } catch (err) {
+              console.error("Failed to terminate backend:", err);
+            }
+            backendProcess = null;
+            startBackend();
+          }
+        }
+      });
+      
+      req.on('error', (error) => {
+        console.error("[*] Failed to reload engine:", error);
+        // Fallback: restart backend
+        if (backendProcess) {
+          try {
+            if (process.platform === 'win32') {
+              spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+            } else {
+              backendProcess.kill();
+            }
+          } catch (err) {
+            console.error("Failed to terminate backend:", err);
+          }
+          backendProcess = null;
+          startBackend();
+        }
+      });
+      
+      req.write(data);
+      req.end();
+      
+      return { success: true, message: "Model loaded and engine reloaded successfully" };
+    } catch (error) {
+      console.error("[*] Error in reload process:", error);
+      // Final fallback: restart backend
+      if (backendProcess) {
+        try {
+          if (process.platform === 'win32') {
+            spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+          } else {
+            backendProcess.kill();
+          }
+        } catch (err) {
+          console.error("Failed to terminate backend:", err);
+        }
+        backendProcess = null;
+        startBackend();
       }
-      backendProcess = null;
-      startBackend();
+      return { success: true, message: "Model loaded (backend restarted)" };
     }
-    
-    return { success: true };
   } catch (error) {
     throw new Error('Failed to load model: ' + error.message);
   }

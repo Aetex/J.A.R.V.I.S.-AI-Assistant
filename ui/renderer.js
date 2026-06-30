@@ -750,8 +750,8 @@ async function deleteModel(filename) {
 
 async function loadModel(modelPath) {
     try {
-        await ipcRenderer.invoke('load-model', modelPath);
-        alert('Model loaded successfully! Restart JARVIS to use the local model.');
+        const result = await ipcRenderer.invoke('load-model', modelPath);
+        alert(result.message || 'Model loaded successfully!');
     } catch (error) {
         alert('Failed to load model: ' + error.message);
     }
