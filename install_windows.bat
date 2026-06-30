@@ -204,13 +204,92 @@ if not exist ".env" (
 echo.
 
 echo ===================================================
+echo   LOCAL MODEL SETUP (llama.cpp)
+echo ===================================================
+echo.
+echo JARVIS can run AI models locally on your machine for
+echo complete privacy and offline capability.
+echo.
+echo [WARNING] Local models require significant system resources:
+echo   - Recommended: 16GB+ RAM for good performance
+echo   - Minimum: 8GB RAM (may experience slower responses)
+echo   - GPU acceleration highly recommended for best performance
+echo.
+echo Would you like to install llama.cpp for local model support?
+echo This will download approximately 100MB of files.
+echo.
+set /p INSTALL_LLAMA="Install llama.cpp? (Y/N): "
+if /i "%INSTALL_LLAMA%"=="Y" (
+    echo.
+    echo [*] Installing llama.cpp...
+    if not exist "llama.cpp" mkdir llama.cpp
+    
+    echo Downloading llama.cpp for Windows...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/ggerganov/llama.cpp/releases/download/b3593/llama-b3593-bin-win-avx2-x64.zip' -OutFile 'llama_cpp.zip'"
+    if errorlevel 1 (
+        echo [ERROR] Failed to download llama.cpp.
+        pause
+        exit /b 1
+    )
+    
+    echo Extracting llama.cpp...
+    powershell -Command "Expand-Archive -Path 'llama_cpp.zip' -DestinationPath 'llama.cpp' -Force"
+    if errorlevel 1 (
+        echo [ERROR] Failed to extract llama.cpp.
+        pause
+        exit /b 1
+    )
+    
+    echo Cleaning up...
+    del llama_cpp.zip
+    
+    echo [OK] llama.cpp installed successfully.
+    
+    echo.
+    echo Creating models directory...
+    if not exist "models" mkdir models
+    echo [OK] Models directory created.
+    
+    echo.
+    echo [*] Step 7: Downloading recommended model...
+    echo.
+    echo Based on typical system specifications, we recommend:
+    echo   Phi-3-mini-4k-instruct-Q4_K_M (~1.2GB)
+    echo   This is a lightweight model that balances performance and quality.
+    echo.
+    set /p DOWNLOAD_MODEL="Download recommended model now? (Y/N): "
+    if /i "%DOWNLOAD_MODEL%"=="Y" (
+        echo Downloading Phi-3-mini-4k-instruct-Q4_K_M...
+        echo This may take several minutes depending on your connection...
+        powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://huggingface.co/bartowski/Phi-3-mini-4k-instruct-GGUF/resolve/main/Phi-3-mini-4k-instruct-Q4_K_M.gguf' -OutFile 'models\Phi-3-mini-4k-instruct-Q4_K_M.gguf'"
+        if errorlevel 1 (
+            echo [ERROR] Failed to download model.
+            echo You can download models later from the settings menu.
+        ) else (
+            echo [OK] Model downloaded successfully.
+            echo Updating .env configuration...
+            powershell -Command "(Get-Content .env) -replace 'LLAMA_CPP_ENABLED=\"false\"', 'LLAMA_CPP_ENABLED=\"true\"' | Set-Content .env"
+            powershell -Command "(Get-Content .env) -replace 'LLAMA_CPP_MODEL_PATH=\"models/your-model.gguf\"', 'LLAMA_CPP_MODEL_PATH=\"models/Phi-3-mini-4k-instruct-Q4_K_M.gguf\"' | Set-Content .env"
+            echo [OK] Configuration updated. Local model enabled.
+        )
+    ) else (
+        echo You can download models later from the settings menu.
+    )
+) else (
+    echo [*] Skipping llama.cpp installation.
+    echo You can install it later by running this installer again.
+)
+echo.
+
+echo ===================================================
 echo   INSTALLATION COMPLETE!
 echo ===================================================
 echo.
 echo You can launch the system using:
 echo launch_jarvis.bat
 echo.
-echo Once the UI opens, you can paste and configure your API keys
-echo directly from the settings menu.
+echo Once the UI opens, you can:
+echo   - Configure API keys from the settings menu (for cloud AI)
+echo   - Manage local models from the Models settings (for offline AI)
 echo.
 pause

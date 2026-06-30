@@ -7,7 +7,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Electron](https://img.shields.io/badge/platform-Electron-blueviolet.svg)](https://www.electronjs.org/)
 
-**Current version:** v0.4
+**Current version:** v0.5
 
 > **Development warning:** JARVIS v0.4 is still under active development. Expect some rough edges and possible bugs while the systems are being upgraded.
 
@@ -21,7 +21,7 @@ A sophisticated, holographic AI assistant inspired by Iron Man's J.A.R.V.I.S. Th
 
 > *"Give me a few hours. I'll have something better figured out." — Tony Stark*
 
-This project supports cloud and local AI engines. You can use Groq, Gemini, or LM Studio.
+This project supports cloud and local AI engines. You can use Groq, Gemini, or run completely offline with local models.
 
 ### Option A: Groq API
 1. Visit the [Groq Cloud Console](https://console.groq.com/keys).
@@ -31,21 +31,36 @@ This project supports cloud and local AI engines. You can use Groq, Gemini, or L
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create a free API Key. This provides a massive context window and is optimized for the free tier.
 
-### Option C: LM Studio (Local / Highly Experimental — Not Recommended)
+### Option C: Local Models (llama.cpp) — 100% Offline & Private
 
-> **Warning:** This option is highly experimental, not recommended for daily use, and is turned off (`false`) by default.
+> **Recommended for:** Privacy-conscious users, offline usage, and those with capable hardware.
 
-1. Install and open [LM Studio](https://lmstudio.ai/).
-2. Download and load a chat/instruct model.
-3. Start LM Studio's local server.
-4. In `.env`, set:
-   ```env
-   LM_STUDIO_ENABLED=true
-   LM_STUDIO_URL="http://127.0.0.1:1234/v1/chat/completions"
-   LM_STUDIO_MODEL="local-model"
-   ```
+The installer will automatically offer to install llama.cpp during setup. Local models provide:
 
-*Note: If `LM_STUDIO_ENABLED=true`, JARVIS will use LM Studio first. Otherwise, Gemini is prioritized over Groq when both cloud keys are provided.*
+- **Complete Privacy**: All processing happens on your machine
+- **Offline Capability**: No internet connection required after initial download
+- **Hardware Detection**: Automatically scans your system and recommends the best model
+- **Easy Management**: Download, delete, and switch models directly from the settings menu
+
+**Requirements:**
+- **Recommended**: 16GB+ RAM for good performance
+- **Minimum**: 8GB RAM (may experience slower responses)
+- **GPU**: NVIDIA GPU with CUDA support for best performance (optional)
+
+**During Installation:**
+1. The installer will ask if you want to install llama.cpp
+2. If you accept, it will download the necessary files (~100MB)
+3. You can choose to download a recommended model immediately (e.g., Phi-3-mini, ~1.2GB)
+4. Models are downloaded to the `models/` folder in the project directory
+
+**Managing Models:**
+- Open JARVIS and go to Settings → Local Models
+- View your hardware capabilities and recommended models
+- Download new models directly from Hugging Face
+- Load or delete downloaded models
+- Switch between cloud and local AI anytime
+
+*Note: Local models are enabled by setting `LLAMA_CPP_ENABLED=true` in `.env`. The installer can configure this automatically.*
 
 ---
 
@@ -149,6 +164,28 @@ If you want to edit the code, tweak the UI, or run the system natively across Wi
 - **Microphone not detected**: Ensure your default input device is set correctly in OS settings.
 - **Backend Error**: Verify that you have configured your API keys inside the HUD's settings panel.
 - **UI not loading**: Ensure you ran `npm install` inside the `ui` folder.
+- **Local model performance**: For better performance with local models, ensure you have sufficient RAM (16GB+ recommended) and consider using a system with GPU acceleration.
+
+---
+
+## 5. Changelog
+
+### v0.5 — Latest (2026-06-30)
+**🚀 Major Update: Local Model Support**
+- Replaced LM Studio with llama.cpp for more efficient, portable local model support
+- Added hardware detection to automatically scan system capabilities and recommend optimal models
+- Implemented model management UI to download, delete, and switch models directly from settings
+- Added Hugging Face integration for browsing and downloading models with one click
+- Smart model recommendations based on RAM and GPU configuration
+- Fully portable installation — everything stays in the project folder
+- Low-end PC support with lightweight models for systems with 8GB RAM
+- Complete offline capability with local models
+
+### v0.4 — Previous
+- Added Google Gemini API support with massive context window
+- Implemented automatic update system
+- Added voice activity detection for wake word
+- Improved error handling and fail-safe mechanisms
 
 ---
 

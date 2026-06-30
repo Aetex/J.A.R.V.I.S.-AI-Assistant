@@ -4,6 +4,23 @@ const { spawn, exec } = require('child_process');
 const Store = require('electron-store');
 const fs = require('fs');
 
+// Import llama manager
+const { createRequire } = require('module');
+const requireFn = createRequire(import.meta.url || __filename);
+const baseDir = path.join(__dirname, '..');
+
+// Dynamically import llama_manager
+let llamaManager = null;
+try {
+  const llamaManagerPath = path.join(baseDir, 'core', 'llama_manager.py');
+  if (fs.existsSync(llamaManagerPath)) {
+    // We'll use a Python subprocess to run llama manager functions
+    console.log("[*] llama_manager.py found, local model support available");
+  }
+} catch (e) {
+  console.log("[*] llama_manager not available");
+}
+
 const store = new Store();
 let win;
 let tray;
@@ -528,6 +545,404 @@ app.whenReady().then(() => {
   });
 });
 
+// IPC handlers for provider priority
+ipcMain.handle('get-provider-priority', async () => {
+  const envPath = path.join(baseDir, '.env');
+  
+  try {
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const match = envContent.match(/AI_PROVIDER_PRIORITY\s*=\s*["']?([^"'\r\n]+)["']?/);
+      if (match) {
+        return match[1].split(',').map(p => p.trim().toLowerCase());
+      }
+    }
+  } catch (error) {
+    console.error('Failed to read provider priority:', error);
+  }
+  
+  return ['groq', 'gemini', 'llama_cpp'];
+});
+
+ipcMain.handle('save-provider-priority', async (event, priority) => {
+  const envPath = path.join(baseDir, '.env');
+  
+  try {
+    let envContent = '';
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } else {
+      const examplePath = path.join(baseDir, '.env.example');
+      if (fs.existsSync(examplePath)) {
+        envContent = fs.readFileSync(examplePath, 'utf8');
+      }
+    }
+    
+    const priorityString = priority.join(',');
+    
+    if (envContent.includes('AI_PROVIDER_PRIORITY')) {
+      envContent = envContent.replace(/AI_PROVIDER_PRIORITY\s*=\s*["']?[^"'\r\n]*["']?/, `AI_PROVIDER_PRIORITY="${priorityString}"`);
+    } else {
+      envContent += `\nAI_PROVIDER_PRIORITY="${priorityString}"`;
+    }
+    
+    fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+    
+    // Restart backend to apply changes
+    if (backendProcess) {
+      console.log("[*] Restarting backend to apply provider priority change...");
+      try {
+        if (process.platform === 'win32') {
+          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+        } else {
+          backendProcess.kill();
+        }
+      } catch (err) {
+        console.error("Failed to terminate backend:", err);
+      }
+      backendProcess = null;
+      startBackend();
+    }
+    
+    return { success: true };
+  } catch (error) {
+    throw new Error('Failed to save provider priority: ' + error.message);
+  }
+});
+
+// IPC handlers for llama.cpp toggle
+ipcMain.handle('get-llama-cpp-status', async () => {
+  const envPath = path.join(baseDir, '.env');
+  
+  try {
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const match = envContent.match(/LLAMA_CPP_ENABLED\s*=\s*["']?([^"'\r\n]+)["']?/);
+      if (match) {
+        const enabled = match[1].toLowerCase() in ('1', 'true', 'yes', 'on');
+        const modelMatch = envContent.match(/LLAMA_CPP_MODEL_PATH\s*=\s*["']?([^"'\r\n]+)["']?/);
+        return {
+          enabled: enabled,
+          modelPath: modelMatch ? modelMatch[1] : ''
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Failed to read llama.cpp status:', error);
+  }
+  
+  return { enabled: false, modelPath: '' };
+});
+
+ipcMain.handle('set-llama-cpp-enabled', async (event, enabled) => {
+  const envPath = path.join(baseDir, '.env');
+  
+  try {
+    let envContent = '';
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } else {
+      const examplePath = path.join(baseDir, '.env.example');
+      if (fs.existsSync(examplePath)) {
+        envContent = fs.readFileSync(examplePath, 'utf8');
+      }
+    }
+    
+    const enabledString = enabled ? 'true' : 'false';
+    
+    if (envContent.includes('LLAMA_CPP_ENABLED')) {
+      envContent = envContent.replace(/LLAMA_CPP_ENABLED\s*=\s*["']?[^"'\r\n]*["']?/, `LLAMA_CPP_ENABLED="${enabledString}"`);
+    } else {
+      envContent += `\nLLAMA_CPP_ENABLED="${enabledString}"`;
+    }
+    
+    fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+    
+    // Restart backend to apply changes
+    if (backendProcess) {
+      console.log("[*] Restarting backend to apply llama.cpp toggle...");
+      try {
+        if (process.platform === 'win32') {
+          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+        } else {
+          backendProcess.kill();
+        }
+      } catch (err) {
+        console.error("Failed to terminate backend:", err);
+      }
+      backendProcess = null;
+      startBackend();
+    }
+    
+    return { success: true };
+  } catch (error) {
+    throw new Error('Failed to set llama.cpp enabled: ' + error.message);
+  }
+});
+
+// IPC handlers for llama model management
+ipcMain.handle('get-hardware-info', async () => {
+  const pythonPath = path.join(baseDir, 'venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(baseDir, 'core', 'llama_manager.py');
+  
+  if (!fs.existsSync(pythonPath) || !fs.existsSync(scriptPath)) {
+    return {
+      os: 'Unknown',
+      architecture: 'Unknown',
+      cpu_cores: 4,
+      ram_gb: 8.0,
+      gpu_info: { has_gpu: false, gpu_name: null, cuda_available: false },
+      recommended_model: {
+        name: 'Phi-3-mini-4k-instruct-Q4_K_M',
+        repo: 'bartowski/Phi-3-mini-4k-instruct-GGUF',
+        file: 'Phi-3-mini-4k-instruct-Q4_K_M.gguf',
+        size_gb: 1.2,
+        description: 'Lightweight model for 8GB RAM systems'
+      }
+    };
+  }
+  
+  return new Promise((resolve) => {
+    const python = spawn(pythonPath, [scriptPath, 'get_hardware_info'], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+    
+    let output = '';
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    python.stderr.on('data', (data) => {
+      console.error('[llama_manager error]:', data.toString());
+    });
+    
+    python.on('close', (code) => {
+      try {
+        const result = JSON.parse(output.trim());
+        resolve(result);
+      } catch (e) {
+        console.error('[llama_manager parse error]:', e);
+        resolve({ error: 'Failed to parse hardware info' });
+      }
+    });
+  });
+});
+
+ipcMain.handle('get-downloaded-models', async () => {
+  const pythonPath = path.join(baseDir, 'venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(baseDir, 'core', 'llama_manager.py');
+  
+  if (!fs.existsSync(pythonPath) || !fs.existsSync(scriptPath)) {
+    return [];
+  }
+  
+  return new Promise((resolve) => {
+    const python = spawn(pythonPath, [scriptPath, 'get_downloaded_models'], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+    
+    let output = '';
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    python.stderr.on('data', (data) => {
+      console.error('[llama_manager error]:', data.toString());
+    });
+    
+    python.on('close', (code) => {
+      try {
+        const result = JSON.parse(output.trim());
+        resolve(result);
+      } catch (e) {
+        console.error('[llama_manager parse error]:', e);
+        resolve([]);
+      }
+    });
+  });
+});
+
+ipcMain.handle('get-available-models', async () => {
+  const pythonPath = path.join(baseDir, 'venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(baseDir, 'core', 'llama_manager.py');
+  
+  if (!fs.existsSync(pythonPath) || !fs.existsSync(scriptPath)) {
+    return [];
+  }
+  
+  return new Promise((resolve) => {
+    const python = spawn(pythonPath, [scriptPath, 'get_available_models'], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+    
+    let output = '';
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    python.stderr.on('data', (data) => {
+      console.error('[llama_manager error]:', data.toString());
+    });
+    
+    python.on('close', (code) => {
+      try {
+        const result = JSON.parse(output.trim());
+        resolve(result);
+      } catch (e) {
+        console.error('[llama_manager parse error]:', e);
+        resolve([]);
+      }
+    });
+  });
+});
+
+let downloadProcess = null;
+
+ipcMain.handle('download-model', async (event, repo, filename) => {
+  const pythonPath = path.join(baseDir, 'venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(baseDir, 'core', 'llama_manager.py');
+  
+  if (!fs.existsSync(pythonPath) || !fs.existsSync(scriptPath)) {
+    throw new Error('Python or llama_manager not found');
+  }
+  
+  return new Promise((resolve, reject) => {
+    downloadProcess = spawn(pythonPath, [scriptPath, 'download_model', repo, filename], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+    
+    let output = '';
+    downloadProcess.stdout.on('data', (data) => {
+      const text = data.toString();
+      output += text;
+      
+      // Try to parse progress updates
+      try {
+        const lines = text.trim().split('\n');
+        for (const line of lines) {
+          if (line.startsWith('PROGRESS:')) {
+            const progressData = JSON.parse(line.substring(9));
+            if (win) win.webContents.send('download-progress', progressData);
+          }
+        }
+      } catch (e) {
+        // Not a progress line, ignore
+      }
+    });
+    
+    downloadProcess.stderr.on('data', (data) => {
+      console.error('[download error]:', data.toString());
+    });
+    
+    downloadProcess.on('close', (code) => {
+      downloadProcess = null;
+      try {
+        const result = JSON.parse(output.trim());
+        if (result.success) {
+          resolve(result);
+        } else {
+          reject(new Error(result.message || 'Download failed'));
+        }
+      } catch (e) {
+        reject(new Error('Download failed'));
+      }
+    });
+  });
+});
+
+ipcMain.handle('delete-model', async (event, filename) => {
+  const pythonPath = path.join(baseDir, 'venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(baseDir, 'core', 'llama_manager.py');
+  
+  if (!fs.existsSync(pythonPath) || !fs.existsSync(scriptPath)) {
+    throw new Error('Python or llama_manager not found');
+  }
+  
+  return new Promise((resolve, reject) => {
+    const python = spawn(pythonPath, [scriptPath, 'delete_model', filename], {
+      cwd: baseDir,
+      windowsHide: true
+    });
+    
+    let output = '';
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    python.stderr.on('data', (data) => {
+      console.error('[llama_manager error]:', data.toString());
+    });
+    
+    python.on('close', (code) => {
+      try {
+        const result = JSON.parse(output.trim());
+        if (result.success) {
+          resolve(result);
+        } else {
+          reject(new Error(result.message || 'Delete failed'));
+        }
+      } catch (e) {
+        reject(new Error('Delete failed'));
+      }
+    });
+  });
+});
+
+ipcMain.handle('load-model', async (event, modelPath) => {
+  const envPath = path.join(baseDir, '.env');
+  
+  try {
+    let envContent = '';
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } else {
+      const examplePath = path.join(baseDir, '.env.example');
+      if (fs.existsSync(examplePath)) {
+        envContent = fs.readFileSync(examplePath, 'utf8');
+      }
+    }
+    
+    // Update llama.cpp settings
+    if (envContent.includes('LLAMA_CPP_ENABLED')) {
+      envContent = envContent.replace(/LLAMA_CPP_ENABLED\s*=\s*["']?[^"'\r\n]*["']?/, 'LLAMA_CPP_ENABLED="true"');
+    } else {
+      envContent += `\nLLAMA_CPP_ENABLED="true"`;
+    }
+    
+    if (envContent.includes('LLAMA_CPP_MODEL_PATH')) {
+      envContent = envContent.replace(/LLAMA_CPP_MODEL_PATH\s*=\s*["']?[^"'\r\n]*["']?/, `LLAMA_CPP_MODEL_PATH="${modelPath}"`);
+    } else {
+      envContent += `\nLLAMA_CPP_MODEL_PATH="${modelPath}"`;
+    }
+    
+    fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+    
+    // Restart backend to apply changes
+    if (backendProcess) {
+      console.log("[*] Restarting backend to apply model change...");
+      try {
+        if (process.platform === 'win32') {
+          spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+        } else {
+          backendProcess.kill();
+        }
+      } catch (err) {
+        console.error("Failed to terminate backend:", err);
+      }
+      backendProcess = null;
+      startBackend();
+    }
+    
+    return { success: true };
+  } catch (error) {
+    throw new Error('Failed to load model: ' + error.message);
+  }
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -539,5 +954,10 @@ app.on('will-quit', () => {
     console.log("[*] Terminating bundled backend process...");
     // Force kill the child process on Windows
     spawn('taskkill', ['/pid', backendProcess.pid, '/f', '/t']);
+  }
+  
+  if (downloadProcess) {
+    console.log("[*] Terminating download process...");
+    downloadProcess.kill();
   }
 });

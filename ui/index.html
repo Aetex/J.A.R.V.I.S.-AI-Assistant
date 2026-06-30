@@ -111,6 +111,87 @@
         </div>
     </div>
 
+    <!-- MODELS MANAGEMENT OVERLAY -->
+    <div id="models-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 10, 20, 0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; font-family: 'Orbitron';">
+        <div class="panel" style="width: 700px; max-height: 80vh; padding: 30px; overflow-y: auto;">
+            <h2 style="color: #00f6ff; letter-spacing: 3px; margin-bottom: 20px;">LOCAL MODELS</h2>
+            
+            <!-- Local AI Toggle -->
+            <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 246, 255, 0.05); border: 1px solid rgba(0, 246, 255, 0.2); border-radius: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 5px;">LOCAL AI STATUS</div>
+                        <div id="local-model-status" style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem;">OFFLINE</div>
+                    </div>
+                    <button id="local-model-toggle" style="background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: #00f6ff; padding: 8px 15px; font-family: 'Orbitron'; cursor: pointer; font-size: 0.7rem; letter-spacing: 1px; transition: all 0.3s;">ENABLE</button>
+                </div>
+            </div>
+            
+            <!-- Hardware Info -->
+            <div id="hardware-info" style="background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                <div style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">HARDWARE SCAN</div>
+                <div id="hardware-details" style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem;">
+                    Scanning hardware capabilities...
+                </div>
+            </div>
+            
+            <!-- Downloaded Models -->
+            <div style="margin-bottom: 20px;">
+                <div style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">DOWNLOADED MODELS</div>
+                <div id="downloaded-models-list" style="background: rgba(0, 246, 255, 0.05); border: 1px solid rgba(0, 246, 255, 0.3); padding: 15px; border-radius: 5px; min-height: 100px;">
+                    <div style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem;">No models downloaded yet.</div>
+                </div>
+            </div>
+            
+            <!-- Available Models -->
+            <div style="margin-bottom: 20px;">
+                <div style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">AVAILABLE MODELS (Hugging Face)</div>
+                <div id="available-models-list" style="background: rgba(0, 246, 255, 0.05); border: 1px solid rgba(0, 246, 255, 0.3); padding: 15px; border-radius: 5px; min-height: 100px;">
+                    <div style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem;">Loading available models...</div>
+                </div>
+            </div>
+            
+            <!-- Download Progress -->
+            <div id="download-progress-container" style="display: none; margin-bottom: 20px;">
+                <div style="color: #00f6ff; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">DOWNLOAD PROGRESS</div>
+                <div style="width: 100%; height: 4px; background: rgba(0, 246, 255, 0.2); margin: 10px 0; overflow: hidden;">
+                    <div id="download-progress-bar" style="width: 0%; height: 100%; background: #00f6ff; transition: width 0.3s ease;"></div>
+                </div>
+                <p id="download-status-text" style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem;">
+                    Preparing download...
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <button id="close-models-btn" style="background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: #00f6ff; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI PROVIDER SETTINGS OVERLAY -->
+    <div id="provider-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 10, 20, 0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; font-family: 'Orbitron';">
+        <div class="panel" style="width: 500px; padding: 30px;">
+            <h2 style="color: #00f6ff; letter-spacing: 3px; margin-bottom: 20px;">AI PROVIDER PRIORITY</h2>
+            
+            <p style="color: #a0d8ef; font-family: 'Rajdhani'; font-size: 0.9rem; margin-bottom: 20px;">
+                Drag and drop to reorder AI providers. The system will try them in this order.
+            </p>
+            
+            <div id="provider-list" style="background: rgba(0, 246, 255, 0.05); border: 1px solid rgba(0, 246, 255, 0.3); padding: 15px; border-radius: 5px; min-height: 150px;">
+                <!-- Providers will be listed here -->
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 0.8rem; color: #a0d8ef;">
+                <strong>Current Priority:</strong> <span id="current-priority">groq, gemini, llama_cpp</span>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <button id="save-priority-btn" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">SAVE</button>
+                <button id="close-provider-btn" style="background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: #00f6ff; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SETTINGS MODAL (Glassmorphic) -->
     <div id="settings-modal" class="settings-modal hidden">
         <div class="settings-modal-overlay"></div>
@@ -127,6 +208,14 @@
                 <button id="keys-btn" class="settings-option-btn keys-option">
                     <span class="option-title">Configure Keys</span>
                     <span class="option-desc">Manage API credentials</span>
+                </button>
+                <button id="provider-btn" class="settings-option-btn provider-option">
+                    <span class="option-title">AI Provider Priority</span>
+                    <span class="option-desc">Change AI engine order</span>
+                </button>
+                <button id="models-btn" class="settings-option-btn models-option">
+                    <span class="option-title">Local Models</span>
+                    <span class="option-desc">Manage offline AI models</span>
                 </button>
             </div>
         </div>

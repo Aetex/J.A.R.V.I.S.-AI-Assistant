@@ -22,3 +22,4 @@ lxml
 primp
 requests
 google-genai
+llama-cpp-python

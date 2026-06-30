@@ -414,6 +414,358 @@ document.getElementById('keys-btn').addEventListener('click', () => {
     openSetupOverlay();
 });
 
+// ── MODELS button (inside settings modal) ───────────────────────────────────
+document.getElementById('models-btn').addEventListener('click', () => {
+    closeSettingsModal();
+    openModelsOverlay();
+});
+
+// ── PROVIDER button (inside settings modal) ─────────────────────────────────
+document.getElementById('provider-btn').addEventListener('click', () => {
+    closeSettingsModal();
+    openProviderOverlay();
+});
+
+let providerPriority = ['groq', 'gemini', 'llama_cpp'];
+
+async function openProviderOverlay() {
+    const overlay = document.getElementById('provider-overlay');
+    overlay.style.display = 'flex';
+    
+    // Load current priority
+    try {
+        const currentPriority = await ipcRenderer.invoke('get-provider-priority');
+        providerPriority = currentPriority;
+    } catch (error) {
+        console.error('Failed to load provider priority:', error);
+    }
+    
+    renderProviderList();
+    document.getElementById('current-priority').textContent = providerPriority.join(', ');
+}
+
+function closeProviderOverlay() {
+    document.getElementById('provider-overlay').style.display = 'none';
+}
+
+function renderProviderList() {
+    const list = document.getElementById('provider-list');
+    list.innerHTML = '';
+    
+    const providerNames = {
+        'groq': 'Groq API (Fastest)',
+        'gemini': 'Google Gemini (Best Context)',
+        'llama_cpp': 'Local Model (Offline)'
+    };
+    
+    providerPriority.forEach((provider, index) => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(0, 246, 255, 0.1);
+            border: 1px solid rgba(0, 246, 255, 0.3);
+            border-radius: 5px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+        item.draggable = true;
+        item.dataset.index = index;
+        item.innerHTML = `
+            <span style="color: #00f6ff; font-size: 0.9rem;">${index + 1}. ${providerNames[provider] || provider}</span>
+            <span style="color: #a0d8ef; font-size: 0.8rem;">☰</span>
+        `;
+        
+        // Drag events
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+        
+        list.appendChild(item);
+    });
+}
+
+let draggedItem = null;
+
+function handleDragStart(e) {
+    draggedItem = this;
+    this.style.opacity = '0.5';
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    this.style.borderTop = '2px solid #00f6ff';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    if (this !== draggedItem) {
+        const fromIndex = parseInt(draggedItem.dataset.index);
+        const toIndex = parseInt(this.dataset.index);
+        
+        // Reorder array
+        const item = providerPriority.splice(fromIndex, 1)[0];
+        providerPriority.splice(toIndex, 0, item);
+        
+        renderProviderList();
+        document.getElementById('current-priority').textContent = providerPriority.join(', ');
+    }
+}
+
+function handleDragEnd(e) {
+    this.style.opacity = '1';
+    document.querySelectorAll('#provider-list > div').forEach(item => {
+        item.style.borderTop = '1px solid rgba(0, 246, 255, 0.3)';
+    });
+}
+
+document.getElementById('save-priority-btn').addEventListener('click', async () => {
+    try {
+        await ipcRenderer.invoke('save-provider-priority', providerPriority);
+        closeProviderOverlay();
+        addMessage('AI provider priority updated successfully. Restart JARVIS to apply changes.', 'jarvis');
+    } catch (error) {
+        alert('Failed to save provider priority: ' + error.message);
+    }
+});
+
+document.getElementById('close-provider-btn').addEventListener('click', closeProviderOverlay);
+
+// ── LOCAL MODEL TOGGLE ─────────────────────────────────────────────────────────
+document.getElementById('local-model-toggle').addEventListener('click', async () => {
+    const toggle = document.getElementById('local-model-toggle');
+    const status = document.getElementById('local-model-status');
+    
+    try {
+        const currentState = await ipcRenderer.invoke('get-llama-cpp-status');
+        const newState = !currentState.enabled;
+        
+        await ipcRenderer.invoke('set-llama-cpp-enabled', newState);
+        
+        if (newState) {
+            toggle.textContent = 'DISABLE';
+            toggle.style.background = 'rgba(255, 68, 68, 0.1)';
+            toggle.style.borderColor = '#ff4444';
+            toggle.style.color = '#ff4444';
+            status.textContent = 'ONLINE';
+            status.style.color = '#00ff00';
+            addMessage('Local AI model enabled. Please ensure a model is loaded in settings.', 'jarvis');
+        } else {
+            toggle.textContent = 'ENABLE';
+            toggle.style.background = 'rgba(0, 246, 255, 0.1)';
+            toggle.style.borderColor = '#00f6ff';
+            toggle.style.color = '#00f6ff';
+            status.textContent = 'OFFLINE';
+            status.style.color = '#a0d8ef';
+            addMessage('Local AI model disabled. Switching to cloud APIs.', 'jarvis');
+        }
+    } catch (error) {
+        alert('Failed to toggle local model: ' + error.message);
+    }
+});
+
+async function openModelsOverlay() {
+    const overlay = document.getElementById('models-overlay');
+    overlay.style.display = 'flex';
+    
+    // Initialize local model toggle status first
+    try {
+        const status = await ipcRenderer.invoke('get-llama-cpp-status');
+        const toggle = document.getElementById('local-model-toggle');
+        const statusText = document.getElementById('local-model-status');
+        
+        if (status.enabled) {
+            toggle.textContent = 'DISABLE';
+            toggle.style.background = 'rgba(255, 68, 68, 0.1)';
+            toggle.style.borderColor = '#ff4444';
+            toggle.style.color = '#ff4444';
+            statusText.textContent = 'ONLINE';
+            statusText.style.color = '#00ff00';
+        } else {
+            toggle.textContent = 'ENABLE';
+            toggle.style.background = 'rgba(0, 246, 255, 0.1)';
+            toggle.style.borderColor = '#00f6ff';
+            toggle.style.color = '#00f6ff';
+            statusText.textContent = 'OFFLINE';
+            statusText.style.color = '#a0d8ef';
+        }
+    } catch (error) {
+        console.error('Failed to initialize local model toggle:', error);
+    }
+    
+    // Load hardware info
+    loadHardwareInfo();
+    
+    // Load downloaded models
+    loadDownloadedModels();
+    
+    // Load available models
+    loadAvailableModels();
+}
+
+function closeModelsOverlay() {
+    document.getElementById('models-overlay').style.display = 'none';
+}
+
+document.getElementById('close-models-btn').addEventListener('click', closeModelsOverlay);
+
+async function loadHardwareInfo() {
+    const hardwareDiv = document.getElementById('hardware-details');
+    hardwareDiv.innerHTML = 'Scanning hardware capabilities...';
+    
+    try {
+        const hardware = await ipcRenderer.invoke('get-hardware-info');
+        
+        let html = `
+            <div style="margin-bottom: 8px;"><strong>OS:</strong> ${hardware.os} (${hardware.architecture})</div>
+            <div style="margin-bottom: 8px;"><strong>CPU Cores:</strong> ${hardware.cpu_cores}</div>
+            <div style="margin-bottom: 8px;"><strong>RAM:</strong> ${hardware.ram_gb} GB</div>
+            <div style="margin-bottom: 8px;"><strong>GPU:</strong> ${hardware.gpu_info.has_gpu ? hardware.gpu_info.gpu_name : 'Not detected'}</div>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; border-radius: 3px;">
+                <strong style="color: #00ff00;">⭐ RECOMMENDED MODEL:</strong><br>
+                ${hardware.recommended_model.name}<br>
+                <small>${hardware.recommended_model.description}</small>
+            </div>
+        `;
+        
+        hardwareDiv.innerHTML = html;
+    } catch (error) {
+        hardwareDiv.innerHTML = 'Failed to scan hardware: ' + error.message;
+    }
+}
+
+async function loadDownloadedModels() {
+    const modelsDiv = document.getElementById('downloaded-models-list');
+    modelsDiv.innerHTML = 'Loading downloaded models...';
+    
+    try {
+        const models = await ipcRenderer.invoke('get-downloaded-models');
+        
+        if (models.length === 0) {
+            modelsDiv.innerHTML = '<div style="color: #a0d8ef; font-family: \'Rajdhani\'; font-size: 0.9rem;">No models downloaded yet.</div>';
+            return;
+        }
+        
+        let html = '';
+        models.forEach(model => {
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(0, 246, 255, 0.1); border: 1px solid rgba(0, 246, 255, 0.3); border-radius: 3px;">
+                    <div>
+                        <div style="color: #00f6ff; font-weight: bold;">${model.name}</div>
+                        <div style="color: #a0d8ef; font-size: 0.8rem;">${model.size_gb} GB</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="loadModel('${model.path}')" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">LOAD</button>
+                        <button onclick="deleteModel('${model.file}')" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">DELETE</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        modelsDiv.innerHTML = html;
+    } catch (error) {
+        modelsDiv.innerHTML = 'Failed to load models: ' + error.message;
+    }
+}
+
+async function loadAvailableModels() {
+    const modelsDiv = document.getElementById('available-models-list');
+    modelsDiv.innerHTML = 'Loading available models...';
+    
+    try {
+        const models = await ipcRenderer.invoke('get-available-models');
+        
+        let html = '';
+        models.forEach(model => {
+            const recommendedBadge = model.recommended === 'MAIN' 
+                ? '<span style="background: #00ff00; color: black; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">MAIN RECOMMENDATION</span>'
+                : model.recommended 
+                ? '<span style="background: rgba(0, 246, 255, 0.3); color: #00f6ff; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">RECOMMENDED</span>'
+                : '';
+            
+            html += `
+                <div style="padding: 10px; margin-bottom: 8px; background: rgba(0, 246, 255, 0.05); border: 1px solid rgba(0, 246, 255, 0.2); border-radius: 3px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="color: #00f6ff; font-weight: bold;">${model.name} ${recommendedBadge}</div>
+                            <div style="color: #a0d8ef; font-size: 0.8rem; margin-top: 5px;">${model.description}</div>
+                            <div style="color: #a0d8ef; font-size: 0.8rem;">Size: ${model.size_gb} GB</div>
+                        </div>
+                        <button onclick="downloadModel('${model.repo}', '${model.file}', '${model.name}')" style="background: rgba(0, 246, 255, 0.1); border: 1px solid #00f6ff; color: #00f6ff; padding: 8px 15px; cursor: pointer; font-size: 0.8rem;">DOWNLOAD</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        modelsDiv.innerHTML = html;
+    } catch (error) {
+        modelsDiv.innerHTML = 'Failed to load available models: ' + error.message;
+    }
+}
+
+async function downloadModel(repo, filename, modelName) {
+    const progressContainer = document.getElementById('download-progress-container');
+    const progressBar = document.getElementById('download-progress-bar');
+    const statusText = document.getElementById('download-status-text');
+    
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    statusText.textContent = `Starting download: ${modelName}...`;
+    
+    try {
+        await ipcRenderer.invoke('download-model', repo, filename);
+        statusText.textContent = 'Download completed successfully!';
+        progressBar.style.width = '100%';
+        
+        setTimeout(() => {
+            progressContainer.style.display = 'none';
+            loadDownloadedModels();
+        }, 2000);
+    } catch (error) {
+        statusText.textContent = 'Download failed: ' + error.message;
+        progressBar.style.backgroundColor = '#ff4444';
+        
+        setTimeout(() => {
+            progressContainer.style.display = 'none';
+            progressBar.style.backgroundColor = '#00f6ff';
+        }, 3000);
+    }
+}
+
+async function deleteModel(filename) {
+    if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+        return;
+    }
+    
+    try {
+        await ipcRenderer.invoke('delete-model', filename);
+        loadDownloadedModels();
+    } catch (error) {
+        alert('Failed to delete model: ' + error.message);
+    }
+}
+
+async function loadModel(modelPath) {
+    try {
+        await ipcRenderer.invoke('load-model', modelPath);
+        alert('Model loaded successfully! Restart JARVIS to use the local model.');
+    } catch (error) {
+        alert('Failed to load model: ' + error.message);
+    }
+}
+
+// Listen for download progress updates
+ipcRenderer.on('download-progress', (event, progress) => {
+    const progressBar = document.getElementById('download-progress-bar');
+    const statusText = document.getElementById('download-status-text');
+    
+    progressBar.style.width = `${progress.percentage}%`;
+    statusText.textContent = `Downloading: ${progress.percentage.toFixed(1)}% (${(progress.downloaded / (1024 * 1024)).toFixed(1)} MB / ${(progress.total / (1024 * 1024)).toFixed(1)} MB)`;
+});
+
 document.getElementById('cancel-update-btn').addEventListener('click', () => {
     const overlay = document.getElementById('update-overlay');
     overlay.style.display = 'none';

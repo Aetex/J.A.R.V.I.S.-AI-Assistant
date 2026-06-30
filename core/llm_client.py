@@ -8,6 +8,12 @@ from core.personality import JARVIS_SYSTEM_PROMPT
 from core.memory import save_memory, load_memory
 from core.profile import load_profile
 
+try:
+    from llama_cpp import Llama
+    LLAMA_CPP_AVAILABLE = True
+except ImportError:
+    LLAMA_CPP_AVAILABLE = False
+
 load_dotenv()
 
 class JARVISEngine:
@@ -35,41 +41,48 @@ class JARVISEngine:
         # Re-fetch keys
         self.groq_key = os.getenv("GROQ_API_KEY")
         self.google_key = os.getenv("GOOGLE_API_KEY")
-        self.lm_studio_enabled = os.getenv("LM_STUDIO_ENABLED", "").lower() in ("1", "true", "yes", "on")
-        self.lm_studio_url = os.getenv("LM_STUDIO_URL", "http://127.0.0.1:1234/v1/chat/completions")
-        self.lm_studio_model = os.getenv("LM_STUDIO_MODEL", "local-model")
+        self.llama_cpp_enabled = os.getenv("LLAMA_CPP_ENABLED", "").lower() in ("1", "true", "yes", "on")
+        self.llama_cpp_model_path = os.getenv("LLAMA_CPP_MODEL_PATH", "")
         
-        # Determine provider and initialize clients accordingly
-        if self.lm_studio_enabled:
-            if self.provider != "lm_studio":
-                print("[*] Initializing LM Studio Engine (Local OpenAI-Compatible API)...")
-                print(f"[*] LM Studio Endpoint: {self.lm_studio_url}")
-                print(f"[*] LM Studio Model: {self.lm_studio_model}")
-            self.provider = "lm_studio"
-        elif self.google_key and len(self.google_key) > 10 and not self.google_key.startswith("PASTE_YOUR_"):
-            if self.provider != "gemini" or self.google_client is None:
-                print("[*] Initializing Gemini Engine (Google GenAI SDK)...")
-                self.google_client = genai.Client(api_key=self.google_key)
-                
-                # Diagnostic: Check available models
-                try:
-                    for m in self.google_client.models.list():
-                        if "flash" in m.name.lower():
-                            print(f"[*] Found Flash Model: {m.name}")
-                except Exception as e:
-                    print(f"[!] Warning: Could not list models: {e}")
+        # Get provider priority from environment
+        priority_str = os.getenv("AI_PROVIDER_PRIORITY", "groq,gemini,llama_cpp")
+        self.provider_priority = [p.strip().lower() for p in priority_str.split(",")]
+        
+        # Determine provider and initialize clients according to priority
+        for provider in self.provider_priority:
+            if provider == "groq" and self.groq_key and len(self.groq_key) > 10 and not self.groq_key.startswith("PASTE_YOUR_"):
+                if self.provider != "groq" or self.client is None:
+                    print("[*] Initializing Groq Engine (Llama 3.3)...")
+                    self.client = Groq(api_key=self.groq_key)
+                    self.model_name = "llama-3.3-70b-versatile"
+                self.provider = "groq"
+                break
+            elif provider == "gemini" and self.google_key and len(self.google_key) > 10 and not self.google_key.startswith("PASTE_YOUR_"):
+                if self.provider != "gemini" or self.google_client is None:
+                    print("[*] Initializing Gemini Engine (Google GenAI SDK)...")
+                    self.google_client = genai.Client(api_key=self.google_key)
+                    
+                    # Diagnostic: Check available models
+                    try:
+                        for m in self.google_client.models.list():
+                            if "flash" in m.name.lower():
+                                print(f"[*] Found Flash Model: {m.name}")
+                    except Exception as e:
+                        print(f"[!] Warning: Could not list models: {e}")
 
-                # Allow user to override model in .env, otherwise use the most stable latest flash
-                self.model_name = os.getenv("GOOGLE_MODEL", "gemini-flash-latest")
-                print(f"[*] Gemini Model Selected: {self.model_name}")
-            self.provider = "gemini"
-        elif self.groq_key and len(self.groq_key) > 10 and not self.groq_key.startswith("PASTE_YOUR_"):
-            if self.provider != "groq" or self.client is None:
-                print("[*] Initializing Groq Engine (Llama 3.3)...")
-                self.client = Groq(api_key=self.groq_key)
-                self.model_name = "llama-3.3-70b-versatile"
-            self.provider = "groq"
-        else:
+                    # Allow user to override model in .env, otherwise use the most stable latest flash
+                    self.model_name = os.getenv("GOOGLE_MODEL", "gemini-flash-latest")
+                    print(f"[*] Gemini Model Selected: {self.model_name}")
+                self.provider = "gemini"
+                break
+            elif provider == "llama_cpp" and self.llama_cpp_enabled and self.llama_cpp_model_path:
+                if self.provider != "llama_cpp":
+                    print("[*] Initializing llama.cpp Engine (Local Model)...")
+                    print(f"[*] llama.cpp Model: {self.llama_cpp_model_path}")
+                self.provider = "llama_cpp"
+                break
+        
+        if self.provider is None:
             if self.provider is not None:
                 print("[WARN] Engines disabled/reset: No active keys found.")
             self.provider = None
@@ -79,10 +92,10 @@ class JARVISEngine:
         self.load_engines()
 
         if not self.provider:
-            return "Sir, I cannot process your request because no AI engine is configured. Please paste your API keys in the settings menu."
+            return "Sir, I cannot process your request because no AI engine is configured. Please paste your API keys in the settings menu or configure a local model."
 
-        if self.provider == "lm_studio":
-            return self.call_lm_studio(user_input)
+        if self.provider == "llama_cpp":
+            return self.call_llama_cpp(user_input)
         elif self.provider == "gemini":
             print("[*] Attempting Gemini request...")
             response = self.call_gemini(user_input)
@@ -96,35 +109,55 @@ class JARVISEngine:
         else:
             return self.call_groq(user_input)
 
-    def call_lm_studio(self, user_input: str):
+    def call_llama_cpp(self, user_input: str):
+        if not LLAMA_CPP_AVAILABLE:
+            return "Sir, llama.cpp is not installed. Please run the installer and enable local model support."
+        
+        if not os.path.exists(self.llama_cpp_model_path):
+            return f"Sir, the model file was not found at {self.llama_cpp_model_path}. Please download a model first."
+        
         if not any(m["role"] == "system" for m in self.messages):
             self.messages.insert(0, {"role": "system", "content": self.system_prompt})
 
         self.messages.append({"role": "user", "content": user_input})
+        
         try:
-            response = requests.post(
-                self.lm_studio_url,
-                json={
-                    "model": self.lm_studio_model,
-                    "messages": self.messages,
-                    "temperature": 0.7,
-                    "max_tokens": 1024,
-                    "stream": False,
-                },
-                timeout=120,
+            # Initialize llama.cpp model
+            llm = Llama(
+                model_path=self.llama_cpp_model_path,
+                n_ctx=2048,
+                n_threads=4,
+                verbose=False
             )
-            response.raise_for_status()
-            data = response.json()
-            assistant_response = data["choices"][0]["message"]["content"]
+            
+            # Format messages for llama.cpp
+            prompt = ""
+            for msg in self.messages:
+                if msg["role"] == "system":
+                    prompt += f"System: {msg['content']}\n"
+                elif msg["role"] == "user":
+                    prompt += f"User: {msg['content']}\n"
+                elif msg["role"] == "assistant":
+                    prompt += f"Assistant: {msg['content']}\n"
+            prompt += "Assistant:"
+            
+            # Generate response
+            output = llm(
+                prompt,
+                max_tokens=512,
+                temperature=0.7,
+                stop=["User:", "System:"],
+                echo=False
+            )
+            
+            assistant_response = output['choices'][0]['text'].strip()
             self.messages.append({"role": "assistant", "content": assistant_response})
             save_memory(self.messages)
             return assistant_response
-        except requests.exceptions.ConnectionError:
-            self.messages.pop()
-            return "Sir, LM Studio is not responding. Please open LM Studio, load a model, and start the local server."
+            
         except Exception as e:
             self.messages.pop()
-            return f"Sir, the local LM Studio core stumbled: {str(e)}"
+            return f"Sir, the local llama.cpp core stumbled: {str(e)}"
 
     def call_groq(self, user_input: str):
         # Ensure we have the system prompt for the fallback
