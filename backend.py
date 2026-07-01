@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from core.llm_client import JARVISEngine
+from core.runtime import execute_tool, process_response
 from core.speech import JARVISSpeech
 from core.stt import JARVISSTT
 from core.wakeword import WakeWordDetector
@@ -150,31 +151,10 @@ async def chat(request: ChatRequest):
     """Processes a chat message and returns the response + tool logs."""
     try:
         response_text = jarvis.chat(request.message)
-        
-        # Parse for tool calls (similar to main.py logic)
-        lines = response_text.split("\n")
-        clean_text_lines = []
-        tools_executed = []
-        
-        from main import execute_tool # Reuse execution logic
-        
-        for line in lines:
-            if line.startswith("TOOL_CALL:"):
-                try:
-                    tool_json = line.replace("TOOL_CALL:", "").strip()
-                    tool_data = json.loads(tool_json)
-                    result = execute_tool(tool_data["name"], tool_data["args"])
-                    tools_executed.append({"name": tool_data["name"], "result": result})
-                    
-                    if tool_data["name"] == "shutdown_system":
-                        # Trigger shutdown after a short delay to let the response send
-                        asyncio.create_task(shutdown_all())
-                except Exception as e:
-                    tools_executed.append({"name": "error", "result": str(e)})
-            else:
-                clean_text_lines.append(line)
-        
-        final_text = "\n".join(clean_text_lines).strip()
+        final_text, tools_executed = process_response(response_text)
+
+        if any(tool["name"] == "shutdown_system" for tool in tools_executed):
+            asyncio.create_task(shutdown_all())
         
         # Failsafe: Trigger shutdown if the LLM says goodbye but forgets the tool call
         shutdown_keywords = ["*jarvis offline*", "shutting down systems", "goodnight, sir"]

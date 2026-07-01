@@ -22,7 +22,13 @@ class JARVISEngine:
         self.google_key = None
         self.google_client = None
         self.client = None
+        self.llama_client = None
         self.provider = None
+        self.model_name = "unknown"
+        self.provider_priority = []
+        self.llama_cpp_enabled = False
+        self.llama_cpp_model_path = ""
+        self._active_llama_model_path = None
         
         self.load_engines()
         
@@ -46,19 +52,22 @@ class JARVISEngine:
         
         # Get provider priority from environment
         priority_str = os.getenv("AI_PROVIDER_PRIORITY", "groq,gemini,llama_cpp")
-        self.provider_priority = [p.strip().lower() for p in priority_str.split(",")]
+        self.provider_priority = [p.strip().lower() for p in priority_str.split(",") if p.strip()]
+        previous_provider = self.provider
+        self.provider = None
+        self.model_name = "unknown"
         
         # Determine provider and initialize clients according to priority
         for provider in self.provider_priority:
             if provider == "groq" and self.groq_key and len(self.groq_key) > 10 and not self.groq_key.startswith("PASTE_YOUR_"):
-                if self.provider != "groq" or self.client is None:
+                if self.client is None:
                     print("[*] Initializing Groq Engine (Llama 3.3)...")
                     self.client = Groq(api_key=self.groq_key)
-                    self.model_name = "llama-3.3-70b-versatile"
                 self.provider = "groq"
+                self.model_name = "llama-3.3-70b-versatile"
                 break
             elif provider == "gemini" and self.google_key and len(self.google_key) > 10 and not self.google_key.startswith("PASTE_YOUR_"):
-                if self.provider != "gemini" or self.google_client is None:
+                if self.google_client is None:
                     print("[*] Initializing Gemini Engine (Google GenAI SDK)...")
                     self.google_client = genai.Client(api_key=self.google_key)
                     
@@ -71,28 +80,31 @@ class JARVISEngine:
                         print(f"[!] Warning: Could not list models: {e}")
 
                     # Allow user to override model in .env, otherwise use the most stable latest flash
-                    self.model_name = os.getenv("GOOGLE_MODEL", "gemini-flash-latest")
-                    print(f"[*] Gemini Model Selected: {self.model_name}")
                 self.provider = "gemini"
+                self.model_name = os.getenv("GOOGLE_MODEL", "gemini-flash-latest")
+                print(f"[*] Gemini Model Selected: {self.model_name}")
                 break
             elif provider == "llama_cpp" and self.llama_cpp_enabled and self.llama_cpp_model_path:
-                if self.provider != "llama_cpp":
+                if previous_provider != "llama_cpp":
                     print("[*] Initializing llama.cpp Engine (Local Model)...")
                     print(f"[*] llama.cpp Model: {self.llama_cpp_model_path}")
                 self.provider = "llama_cpp"
+                self.model_name = os.path.basename(self.llama_cpp_model_path) or "llama.cpp"
                 break
         
-        if self.provider is None:
-            if self.provider is not None:
-                print("[WARN] Engines disabled/reset: No active keys found.")
-            self.provider = None
+        if self.provider is None and previous_provider is not None:
+            print("[WARN] Engines disabled/reset: No active providers found.")
 
     def chat(self, user_input: str):
         # Reload configuration dynamically in case of updates
         self.load_engines()
 
         if not self.provider:
-            return "Sir, I cannot process your request because no AI engine is configured. Please paste your API keys in the settings menu or configure a local model."
+            return (
+                "Sir, I cannot process your request because no AI engine is configured. "
+                "Please add your API keys in the settings menu, configure them in your environment, "
+                "or enable a local llama.cpp model."
+            )
 
         if self.provider == "llama_cpp":
             return self.call_llama_cpp(user_input)
@@ -109,39 +121,52 @@ class JARVISEngine:
         else:
             return self.call_groq(user_input)
 
-    def call_llama_cpp(self, user_input: str):
-        if not LLAMA_CPP_AVAILABLE:
-            return "Sir, llama.cpp is not installed. Please run the installer and enable local model support."
-        
-        # Normalize the path to handle different path formats
-        normalized_path = os.path.normpath(self.llama_cpp_model_path)
-        
-        # If path is relative, make it absolute from current directory
-        if not os.path.isabs(normalized_path):
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(script_dir)
-            normalized_path = os.path.join(project_root, normalized_path)
-            normalized_path = os.path.normpath(normalized_path)
-        
-        print(f"[*] Looking for model at: {normalized_path}")
-        print(f"[*] Path exists: {os.path.exists(normalized_path)}")
-        
-        if not os.path.exists(normalized_path):
-            return f"Sir, the model file was not found at {normalized_path}. Please download a model first."
-        
+    def _ensure_system_message(self):
         if not any(m["role"] == "system" for m in self.messages):
             self.messages.insert(0, {"role": "system", "content": self.system_prompt})
+
+    def _resolve_llama_model_path(self):
+        normalized_path = os.path.normpath(self.llama_cpp_model_path)
+        if os.path.isabs(normalized_path):
+            return normalized_path
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(script_dir)
+        return os.path.normpath(os.path.join(project_root, normalized_path))
+
+    def _get_llama_client(self, model_path):
+        if not LLAMA_CPP_AVAILABLE:
+            return None
+
+        if self.llama_client is None or self._active_llama_model_path != model_path:
+            n_ctx = int(os.getenv("LLAMA_CPP_N_CTX", "2048"))
+            n_threads = int(os.getenv("LLAMA_CPP_THREADS", str(max(1, min(8, os.cpu_count() or 4)))))
+            self.llama_client = Llama(
+                model_path=model_path,
+                n_ctx=n_ctx,
+                n_threads=n_threads,
+                verbose=False
+            )
+            self._active_llama_model_path = model_path
+
+        return self.llama_client
+
+    def call_llama_cpp(self, user_input: str):
+        if not LLAMA_CPP_AVAILABLE:
+            return "Sir, llama.cpp support is not installed. Please install `llama-cpp-python` first."
+
+        normalized_path = self._resolve_llama_model_path()
+        print(f"[*] Looking for model at: {normalized_path}")
+
+        if not os.path.exists(normalized_path):
+            return f"Sir, the model file was not found at {normalized_path}. Please download a model first."
+
+        self._ensure_system_message()
 
         self.messages.append({"role": "user", "content": user_input})
         
         try:
-            # Initialize llama.cpp model
-            llm = Llama(
-                model_path=normalized_path,
-                n_ctx=2048,
-                n_threads=4,
-                verbose=False
-            )
+            llm = self._get_llama_client(normalized_path)
             
             # Format messages for llama.cpp
             prompt = ""
@@ -157,8 +182,8 @@ class JARVISEngine:
             # Generate response
             output = llm(
                 prompt,
-                max_tokens=512,
-                temperature=0.7,
+                max_tokens=int(os.getenv("LLAMA_CPP_MAX_TOKENS", "512")),
+                temperature=float(os.getenv("LLAMA_CPP_TEMPERATURE", "0.7")),
                 stop=["User:", "System:"],
                 echo=False
             )
@@ -174,8 +199,7 @@ class JARVISEngine:
 
     def call_groq(self, user_input: str):
         # Ensure we have the system prompt for the fallback
-        if not any(m["role"] == "system" for m in self.messages):
-            self.messages.insert(0, {"role": "system", "content": self.system_prompt})
+        self._ensure_system_message()
             
         self.messages.append({"role": "user", "content": user_input})
         try:
